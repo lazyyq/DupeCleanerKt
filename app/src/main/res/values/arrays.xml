@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="match_modes">
+        <item>Title only</item>
+        <item>Title - Artist</item>
+        <item>Title - Artist - Album</item>
+    </string-array>
+</resources>
