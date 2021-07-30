@@ -30,6 +30,7 @@ class ScannerActivity : AppCompatActivity() {
     companion object {
         const val INTENT_EXTRA_SCAN_PATH = "intent_extra_scan_path"
         const val INTENT_EXTRA_MATCH_MODE_INDEX = "intent_extra_match_mode_index"
+        const val INTENT_EXTRA_RUN_MEDIA_SCANNER = "intent_extra_run_media_scanner"
     }
 
     private enum class CheckMode {
@@ -46,6 +47,7 @@ class ScannerActivity : AppCompatActivity() {
 
     private lateinit var scanDirPath: String
     private lateinit var matchMode: DupeManager.MatchMode
+    private var runMediaScannerFirst = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +61,7 @@ class ScannerActivity : AppCompatActivity() {
         scanDirPath = intent.getStringExtra(INTENT_EXTRA_SCAN_PATH) ?: run { finish(); return; }
         val matchModeIndex = intent.getIntExtra(INTENT_EXTRA_MATCH_MODE_INDEX, -1)
         matchMode = DupeManager.MatchMode.values()[matchModeIndex]
+        runMediaScannerFirst = intent.getBooleanExtra(INTENT_EXTRA_RUN_MEDIA_SCANNER, false)
 
         setupListView()
 
@@ -116,7 +119,7 @@ class ScannerActivity : AppCompatActivity() {
         // Add sections
         Log.e("SCAN", "launching scanner with $scanDirPath")
         dm = DupeManager(this, lifecycleScope, scanDirPath, matchMode)
-        dm.scan { duplicates, totalScanned, totalDuplicates ->
+        dm.scan(runMediaScannerFirst) { duplicates, totalScanned, totalDuplicates ->
             Log.e("SCAN", "scanned $totalScanned, found $totalDuplicates")
 
             duplicates.forEach {

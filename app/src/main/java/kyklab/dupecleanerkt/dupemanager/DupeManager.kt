@@ -1,12 +1,16 @@
 package kyklab.dupecleanerkt.dupemanager
 
+import android.app.Activity
 import android.content.Context
+import android.media.MediaScannerConnection
 import android.provider.MediaStore
 import android.util.Log
+import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kyklab.dupecleanerkt.data.Music
+import kyklab.dupecleanerkt.utils.scanMediaFiles
 import kyklab.dupecleanerkt.utils.untilLast
 import java.util.*
 
@@ -48,7 +52,17 @@ class DupeManager(
     private var totalScanned = 0 // Number of total analyzed files
     private var totalDuplicates = 0 // Number of total duplicates
 
-    fun scan(callback: ScanCompletedCallback? = null) {
+    fun scan(runMediaScannerFirst: Boolean = false, callback: ScanCompletedCallback? = null) {
+        if (runMediaScannerFirst) {
+            context.scanMediaFiles(path) { path, uri ->
+                _scan(callback)
+            }
+        } else {
+            _scan(callback)
+        }
+    }
+
+    private fun _scan(callback: ScanCompletedCallback? = null) {
         scope.launch(Dispatchers.IO) {
             /* Query mediastore db for music files and add to found music list */
 

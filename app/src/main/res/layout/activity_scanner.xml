@@ -20,6 +20,7 @@
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
+            style="@style/Widget.MaterialComponents.Toolbar.PrimarySurface"
             android:layout_width="0dp"
             android:layout_height="?actionBarSize"
             app:contentInsetStart="0dp"
@@ -48,6 +49,7 @@
 
                 <TextView
                     android:id="@+id/tvStatus"
+                    android:textColor="@color/toolbar_text_color"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"

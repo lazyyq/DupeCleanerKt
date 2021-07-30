@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="toolbar_text_color">@color/material_on_surface_emphasis_high_type</color>
+</resources>

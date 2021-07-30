@@ -15,6 +15,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val isDebug: MutableLiveData<Boolean> = MutableLiveData(false)
     val spinnerSelectedItem: MutableLiveData<Int> = MutableLiveData(1)
     val isMediaScannerRunning: MutableLiveData<Boolean> = MutableLiveData(false)
+    val runMediaScannerFirst: MutableLiveData<Boolean> = MutableLiveData(false)
     val isScanReady: MediatorLiveData<Boolean> = MediatorLiveData()
 
     init {

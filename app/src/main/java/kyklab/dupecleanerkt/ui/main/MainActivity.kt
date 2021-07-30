@@ -1,7 +1,6 @@
 package kyklab.dupecleanerkt.ui.main
 
 import android.Manifest
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -12,7 +11,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -74,9 +72,7 @@ class MainActivity : AppCompatActivity() {
             checkPermissions()
         }
 
-        requestPermissions()
-
-//        binding.btnRequestPermission.setOnClickListener { requestPermissions() }
+        binding.btnGrantPermissions.setOnClickListener { requestPermissions() }
         binding.btnChooseDirectory.setOnClickListener { openFolderPicker() }
 //        binding.btnTest.setOnClickListener { test() }
 //        binding.btnCreate.setOnClickListener { create() }
@@ -85,24 +81,6 @@ class MainActivity : AppCompatActivity() {
 //        binding.btnRunMediaScanner.setOnClickListener { runMediaScanner() }
 
         setupSpinner()
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        if (!viewModel.isPermissionGranted.value!!) {
-            AlertDialog.Builder(this)
-                .setTitle("Permissions required")
-                .setMessage("""
-                    This app needs storage permission to work properly.
-                    Please allow the permission in the following screen.
-                """.trimIndent())
-                .setCancelable(false)
-                .setPositiveButton("OK") { dialog, which ->
-                    requestPermissions()
-                }
-                .show()
-        }
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -132,8 +110,10 @@ class MainActivity : AppCompatActivity() {
     private fun requestPermissions() {
         if (isAtLeastR) {
             permissionActivityLauncher.launch(
-                Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                    Uri.parse("package:${BuildConfig.APPLICATION_ID}"))
+                Intent(
+                    android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                    Uri.parse("package:${BuildConfig.APPLICATION_ID}")
+                )
             )
         } else {
             requestPermissionLauncher.launch(permissions)
@@ -197,8 +177,14 @@ class MainActivity : AppCompatActivity() {
         } else {
             val intent = Intent(this, ScannerActivity::class.java).apply {
                 putExtra(ScannerActivity.INTENT_EXTRA_SCAN_PATH, path)
-                putExtra(ScannerActivity.INTENT_EXTRA_MATCH_MODE_INDEX,
-                    viewModel.spinnerSelectedItem.value)
+                putExtra(
+                    ScannerActivity.INTENT_EXTRA_MATCH_MODE_INDEX,
+                    viewModel.spinnerSelectedItem.value
+                )
+                putExtra(
+                    ScannerActivity.INTENT_EXTRA_RUN_MEDIA_SCANNER,
+                    viewModel.runMediaScannerFirst.value
+                )
             }
             startActivity(intent)
         }
