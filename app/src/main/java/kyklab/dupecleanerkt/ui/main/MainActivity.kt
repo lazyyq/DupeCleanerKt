@@ -1,6 +1,7 @@
 package kyklab.dupecleanerkt.ui.main
 
 import android.Manifest
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -11,20 +12,20 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
-import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
 import com.anggrayudi.storage.SimpleStorage
-import com.anggrayudi.storage.callback.FolderPickerCallback
-import com.anggrayudi.storage.callback.StorageAccessCallback
 import com.anggrayudi.storage.file.DocumentFileCompat
-import com.anggrayudi.storage.file.StorageType
 import com.anggrayudi.storage.file.getAbsolutePath
+import kyklab.dupecleanerkt.BuildConfig
 import kyklab.dupecleanerkt.R
 import kyklab.dupecleanerkt.databinding.ActivityMainBinding
 import kyklab.dupecleanerkt.ui.scanner.ScannerActivity
+import kyklab.dupecleanerkt.utils.Prefs
+import kyklab.dupecleanerkt.utils.scanMediaFiles
 import java.io.File
 import java.util.*
 
@@ -36,7 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewModel: MainViewModel
     private lateinit var binding: ActivityMainBinding
 
-    private lateinit var permissions: Array<String>
+    private val permissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { map ->
@@ -45,77 +46,12 @@ class MainActivity : AppCompatActivity() {
             viewModel.isPermissionGranted.value = result
         }
 
-
     private val simpleStorage = SimpleStorage(this)
 
-    private val storageAccessCallback = object : StorageAccessCallback {
-        override fun onRootPathNotSelected(
-            requestCode: Int,
-            rootPath: String,
-            uri: Uri,
-            selectedStorageType: StorageType,
-            expectedStorageType: StorageType
-        ) {
-            Log.e(
-                "StorageAccessCallback onRootPathNotSelected",
-                "requestCode: $requestCode\nrootPath: $rootPath\nuri: $uri\nselectedStorageType: $selectedStorageType\nexpectedStorageType: $expectedStorageType"
-            )
-        }
-
-        override fun onRootPathPermissionGranted(requestCode: Int, root: DocumentFile) {
-            Log.e(
-                "StorageAccessCallback onRootPathPermissionGranted",
-                "requestCode: $requestCode\nroot: $root"
-            )
-        }
-
-        override fun onStoragePermissionDenied(requestCode: Int) {
-            Log.e("StorageAccessCallback onStoragePermissionDenied", "requestCode: $requestCode")
-        }
-    }
-
-    private val folderPickerCallback = object : FolderPickerCallback {
-        override fun onActivityHandlerNotFound(requestCode: Int, intent: Intent) {
-            Log.e(
-                "FolderPickerCallback onActivityHandlerNotFound",
-                "requestCode: $requestCode\nintent: $intent"
-            )
-        }
-
-        override fun onCanceledByUser(requestCode: Int) {
-            Log.e("FolderPickerCallback onCanceledByUser", "requestCode: $requestCode")
-        }
-
-        override fun onFolderSelected(requestCode: Int, folder: DocumentFile) {
-            Log.e(
-                "FolderPickerCallback onFolderSelected",
-                "requestCode: $requestCode\nfolder: $folder"
-            )
-
-            val path = folder.getAbsolutePath(this@MainActivity)
-            viewModel.chosenDirectory.value = path
-        }
-
-        override fun onStorageAccessDenied(
-            requestCode: Int,
-            folder: DocumentFile?,
-            storageType: StorageType
-        ) {
-            Log.e(
-                "FolderPickerCallback onStorageAccessDenied",
-                "requestCode: $requestCode\nfolder: $folder\nstorageType: $storageType"
-            )
-        }
-
-        override fun onStoragePermissionDenied(requestCode: Int) {
-            Log.e("FolderPickerCallback onStoragePermissionDenied", "requestCode: $requestCode")
-        }
-    }
-
+    /*
     /**
      * Old code for requesting directory permission
      */
-    /*
     private val folderPickerIntentLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -123,7 +59,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     */
-    private var path: String? = null
+    private var path = Prefs.lastChosenDirPath
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,14 +74,35 @@ class MainActivity : AppCompatActivity() {
             checkPermissions()
         }
 
-        binding.btnRequestPermission.setOnClickListener { requestPermissions() }
-        binding.btnPickFolder.setOnClickListener { openFolderPicker() }
-        binding.btnTest.setOnClickListener { test() }
-        binding.btnCreate.setOnClickListener { create() }
-        binding.btnRemove.setOnClickListener { remove() }
+        requestPermissions()
+
+//        binding.btnRequestPermission.setOnClickListener { requestPermissions() }
+        binding.btnChooseDirectory.setOnClickListener { openFolderPicker() }
+//        binding.btnTest.setOnClickListener { test() }
+//        binding.btnCreate.setOnClickListener { create() }
+//        binding.btnRemove.setOnClickListener { remove() }
         binding.btnGo.setOnClickListener { go() }
+//        binding.btnRunMediaScanner.setOnClickListener { runMediaScanner() }
 
         setupSpinner()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (!viewModel.isPermissionGranted.value!!) {
+            AlertDialog.Builder(this)
+                .setTitle("Permissions required")
+                .setMessage("""
+                    This app needs storage permission to work properly.
+                    Please allow the permission in the following screen.
+                """.trimIndent())
+                .setCancelable(false)
+                .setPositiveButton("OK") { dialog, which ->
+                    requestPermissions()
+                }
+                .show()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -154,8 +111,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkPermissions() {
-        permissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-
         var granted = true
         permissions.forEach {
             if (ContextCompat.checkSelfPermission(this, it) ==
@@ -176,8 +131,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestPermissions() {
         if (isAtLeastR) {
-            permissionActivityLauncher.launch(Intent(android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION))
-//            startActivityForResult(Intent(android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION), 1000)
+            permissionActivityLauncher.launch(
+                Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                    Uri.parse("package:${BuildConfig.APPLICATION_ID}"))
+            )
         } else {
             requestPermissionLauncher.launch(permissions)
         }
@@ -187,10 +144,13 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
             it ?: return@registerForActivityResult
 
-            path = DocumentFileCompat.fromUri(this, it)?.getAbsolutePath(this) ?: return@registerForActivityResult
+            path = DocumentFileCompat.fromUri(this, it)?.getAbsolutePath(this)
+                ?: return@registerForActivityResult
 
-            viewModel.isFolderPicked.value=true
-            viewModel.chosenDirectory.value=path
+            viewModel.isFolderPicked.value = true
+            viewModel.chosenDirectory.value = path
+
+            Prefs.lastChosenDirPath = path
         }
 
     private fun openFolderPicker() {
@@ -235,16 +195,31 @@ class MainActivity : AppCompatActivity() {
         if (path == null) {
             Toast.makeText(this, "Path not selected", Toast.LENGTH_SHORT).show()
         } else {
-            val intent = Intent(this, ScannerActivity::class.java)
-            intent.putExtra(ScannerActivity.INTENT_EXTRA_SCAN_PATH, path)
-            intent.putExtra(ScannerActivity.INTENT_EXTRA_MATCH_MODE, viewModel.spinnerSelectedItem.value)
+            val intent = Intent(this, ScannerActivity::class.java).apply {
+                putExtra(ScannerActivity.INTENT_EXTRA_SCAN_PATH, path)
+                putExtra(ScannerActivity.INTENT_EXTRA_MATCH_MODE_INDEX,
+                    viewModel.spinnerSelectedItem.value)
+            }
             startActivity(intent)
+        }
+    }
+
+    private fun runMediaScanner() {
+        viewModel.isMediaScannerRunning.value = true
+        val start = System.currentTimeMillis()
+        scanMediaFiles(path!!) { path, uri ->
+            val end = System.currentTimeMillis()
+            Toast.makeText(this, "Finished scanning, took ${end - start}ms", Toast.LENGTH_SHORT)
+                .show()
+            runOnUiThread {
+                viewModel.isMediaScannerRunning.value = false
+            }
         }
     }
 
     private fun setupSpinner() {
         viewModel.spinnerSelectedItem.observe(this) {
-            Log.e("Observer","Spinner value updated: $it")
+            Log.e("Observer", "Spinner value updated: $it")
         }
     }
 

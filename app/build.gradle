@@ -59,4 +59,5 @@ dependencies {
     implementation 'com.simplecityapps:recyclerview-fastscroll:2.0.1'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+    implementation 'com.github.sephiroth74:Tri-State-Checkbox:v1.0.0'
 }

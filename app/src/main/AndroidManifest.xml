@@ -14,7 +14,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.DupeCleanerKt">
-        <activity android:name=".ui.scanner.ScannerActivity"></activity>
+        <activity android:name=".ui.scanner.ScannerActivity" />
         <activity android:name=".ui.main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

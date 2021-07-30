@@ -15,20 +15,25 @@ class DupeManager(
     private val context: Context,
     private val scope: CoroutineScope,
     var path: String,
-    var matchMode: Int,
-    var sortMode: Int
+    var matchMode: MatchMode
 ) {
     companion object {
         private val TAG = DupeManager::class.java.simpleName
 
         private fun log(msg: String) = Log.e(TAG, msg)
+    }
 
-        const val MATCH_MODE_TITLE = 0
-        const val MATCH_MODE_TITLE_ARTIST = 1
-        const val MATCH_MODE_TITLE_ARTIST_ALBUM = 2
+    enum class SortMode {
+        PATH_ASC,
+        PATH_DSC,
+        LAST_MODIFIED_DATE_ASC,
+        LAST_MODIFIED_DATE_DSC,
+    }
 
-        const val SORT_MODE_PATH = 0
-        const val SORT_MODE_LAST_MODIFIED_DATE = 1
+    enum class MatchMode {
+        TITLE,
+        TITLE_ARTIST,
+        TITLE_ARTIST_ALBUM,
     }
 
     // List of files found under selected directory, ready to be analyzed for duplicates
@@ -122,24 +127,21 @@ class DupeManager(
         }
     }
 
-    fun sort(reverse: Boolean = false, callback: SortCompletedCallback? = null) {
-        if (!(sortMode == SORT_MODE_PATH || sortMode == SORT_MODE_LAST_MODIFIED_DATE)) {
-            throw RuntimeException("Wrong sort mode")
-        }
-
+    fun sort(sortMode: SortMode, callback: SortCompletedCallback? = null) {
         scope.launch(Dispatchers.IO) {
-            if (sortMode == SORT_MODE_PATH) {
-                if (!reverse) {
+            when (sortMode) {
+                SortMode.PATH_ASC ->
                     dupeList.forEach { list -> list.sortBy { music -> music.path } }
-                } else {
+
+                SortMode.PATH_DSC ->
                     dupeList.forEach { list -> list.sortByDescending { music -> music.path } }
-                }
-            } else /* Modified Date */ {
-                if (!reverse) {
+
+                SortMode.LAST_MODIFIED_DATE_ASC ->
                     dupeList.forEach { list -> list.sortBy { music -> music.dateModified } }
-                } else {
+
+                SortMode.LAST_MODIFIED_DATE_DSC ->
                     dupeList.forEach { list -> list.sortByDescending { music -> music.dateModified } }
-                }
+
             }
             callback?.onSortDone(dupeList)
         }
@@ -161,10 +163,9 @@ class DupeManager(
 
     private fun generateHashKey(music: Music): String {
         return when (matchMode) {
-            MATCH_MODE_TITLE -> music.title
-            MATCH_MODE_TITLE_ARTIST -> "${music.title}\n\n${music.artist}"
-            MATCH_MODE_TITLE_ARTIST_ALBUM -> "${music.title}\n\n${music.artist}\n\n${music.album}"
-            else -> throw RuntimeException("Wrong match mode!")
+            MatchMode.TITLE -> music.title
+            MatchMode.TITLE_ARTIST -> "${music.title}\n\n${music.artist}"
+            MatchMode.TITLE_ARTIST_ALBUM -> "${music.title}\n\n${music.artist}\n\n${music.album}"
         }
     }
 }

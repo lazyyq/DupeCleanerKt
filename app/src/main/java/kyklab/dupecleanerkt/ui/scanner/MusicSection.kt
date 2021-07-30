@@ -67,7 +67,7 @@ class MusicSection(
     private fun Music.getArtistAndAlbumText() =
         "${if (artist.isNotEmpty()) artist else "Unknown artist"} - ${if (album.isNotEmpty()) album else "Unknown album"}"
 
-    interface ClickListener {
+    fun interface ClickListener {
         fun onItemCheckBoxChanged(
             section: MusicSection?, itemAdapterPosition: Int,
             newState: Boolean
