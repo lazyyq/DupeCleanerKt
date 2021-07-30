@@ -15,8 +15,8 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:fillViewport="true"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -25,7 +25,8 @@
             android:orientation="vertical"
             tools:context=".ui.main.MainActivity">
 
-            <androidx.cardview.widget.CardView style="@style/MainCardViewStyle"
+            <androidx.cardview.widget.CardView
+                style="@style/MainCardViewStyle"
                 bind:visibility="@{!viewModel.isPermissionGranted()}">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -34,8 +35,8 @@
                     android:padding="16dp">
 
                     <TextView
-                        style="@style/MainCardTitleTextStyle"
                         android:id="@+id/tvGrantPermissionsTitle"
+                        style="@style/MainCardTitleTextStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Step 0. Grant permissions"
@@ -45,11 +46,11 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
                         android:text="Some permissions are necessary for the app to work."
-                        app:layout_constraintTop_toBottomOf="@id/tvGrantPermissionsTitle"
-                        app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        android:layout_margin="8dp" />
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tvGrantPermissionsTitle" />
 
                     <Button
                         android:id="@+id/btnGrantPermissions"
@@ -89,8 +90,8 @@
                         <com.google.android.material.textfield.TextInputEditText
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:focusable="false"
                             android:editable="false"
+                            android:focusable="false"
                             android:text="@{viewModel.chosenDirectory}" />
                     </com.google.android.material.textfield.TextInputLayout>
 

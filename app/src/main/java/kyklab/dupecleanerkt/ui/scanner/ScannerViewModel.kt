@@ -1,15 +1,11 @@
 package kyklab.dupecleanerkt.ui.scanner
 
 import android.app.Application
-import android.widget.RadioGroup
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import kyklab.dupecleanerkt.R
-import kyklab.dupecleanerkt.dupemanager.DupeManager
 
-class ScannerViewModel(application: Application): AndroidViewModel(application) {
+class ScannerViewModel(application: Application) : AndroidViewModel(application) {
     val isScanDone: MutableLiveData<Boolean> = MutableLiveData(false)
     val totalScanned: MutableLiveData<Int> = MutableLiveData(0)
     val totalDupes: MutableLiveData<Int> = MutableLiveData(0)
@@ -18,13 +14,16 @@ class ScannerViewModel(application: Application): AndroidViewModel(application) 
 
     init {
         scanResultText.addSource(totalScanned) {
-            scanResultText.value = "$it scanned, ${totalDupes.value} duplicates found\n${totalChecked.value} checked"
+            scanResultText.value =
+                "$it scanned, ${totalDupes.value} duplicates found\n${totalChecked.value} checked"
         }
         scanResultText.addSource(totalDupes) {
-            scanResultText.value = "${totalScanned.value} scanned, $it duplicates found\n${totalChecked.value} checked"
+            scanResultText.value =
+                "${totalScanned.value} scanned, $it duplicates found\n${totalChecked.value} checked"
         }
         scanResultText.addSource(totalChecked) {
-            scanResultText.value = "${totalScanned.value} scanned, ${totalDupes.value} duplicates found\n$it checked"
+            scanResultText.value =
+                "${totalScanned.value} scanned, ${totalDupes.value} duplicates found\n$it checked"
         }
     }
 

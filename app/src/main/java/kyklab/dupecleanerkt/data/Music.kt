@@ -1,7 +1,6 @@
 package kyklab.dupecleanerkt.data
 
 import android.icu.text.SimpleDateFormat
-import android.provider.MediaStore
 import java.util.*
 
 data class Music(
@@ -23,7 +22,7 @@ data class Music(
         var seconds = duration / 1000
         val minutes = seconds / 60
         seconds %= 60
-        "$minutes:${if (seconds<10) "0$seconds" else seconds}"
+        "$minutes:${if (seconds < 10) "0$seconds" else seconds}"
     }
 
     val dateModifiedString = run {

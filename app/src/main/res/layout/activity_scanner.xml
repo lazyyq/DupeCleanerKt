@@ -49,13 +49,13 @@
 
                 <TextView
                     android:id="@+id/tvStatus"
-                    android:textColor="@color/toolbar_text_color"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
                     android:paddingEnd="16dp"
                     android:text="@{viewModel.scanResultText}"
+                    android:textColor="@color/toolbar_text_color"
                     tools:text="Total 369 duplicates found" />
 
                 <ImageView

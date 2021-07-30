@@ -62,9 +62,9 @@
                     android:id="@+id/tvDuration"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
                     android:layout_gravity="center_vertical"
-                    android:hint="3:30 | 16/10/20 오후 3:13" />
+                    android:hint="3:30 | 16/10/20 오후 3:13"
+                    android:textSize="12sp" />
 
             </LinearLayout>
 

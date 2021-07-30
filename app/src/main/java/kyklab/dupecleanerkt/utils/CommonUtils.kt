@@ -3,8 +3,6 @@ package kyklab.dupecleanerkt.utils
 import android.content.ContentUris
 import android.database.Cursor
 import android.net.Uri
-import android.view.View
-import androidx.core.view.postDelayed
 
 inline fun <T : Cursor> T.untilLast(block: (T) -> Unit): T {
     this.use {

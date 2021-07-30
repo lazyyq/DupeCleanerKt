@@ -11,7 +11,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val chosenDirectory: MutableLiveData<String> = MutableLiveData(
         Prefs.lastChosenDirPath ?: ""
     )
-    val isFolderPicked: MutableLiveData<Boolean> = MutableLiveData(chosenDirectory.value?.isNotEmpty() ?: false)
+    val isFolderPicked: MutableLiveData<Boolean> =
+        MutableLiveData(chosenDirectory.value?.isNotEmpty() ?: false)
     val isDebug: MutableLiveData<Boolean> = MutableLiveData(false)
     val spinnerSelectedItem: MutableLiveData<Int> = MutableLiveData(1)
     val isMediaScannerRunning: MutableLiveData<Boolean> = MutableLiveData(false)

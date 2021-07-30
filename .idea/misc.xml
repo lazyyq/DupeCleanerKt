@@ -3,10 +3,12 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/kykint/ApkProjects/DupeCleanerKt/app/src/main/res/drawable/ic_album.xml" value="0.5487179487179488" />
         <entry key="..\:/Users/kykint/ApkProjects/DupeCleanerKt/app/src/main/res/drawable/ic_sort.xml" value="0.5348717948717949" />
         <entry key="..\:/Users/kykint/ApkProjects/DupeCleanerKt/app/src/main/res/layout/activity_main.xml" value="0.34270833333333334" />
         <entry key="..\:/Users/kykint/ApkProjects/DupeCleanerKt/app/src/main/res/layout/activity_scanner.xml" value="0.5" />
         <entry key="..\:/Users/kykint/ApkProjects/DupeCleanerKt/app/src/main/res/layout/music_section_header.xml" value="0.4036458333333333" />
+        <entry key="..\:/Users/kykint/ApkProjects/DupeCleanerKt/app/src/main/res/layout/music_section_item.xml" value="0.2631712259371834" />
       </map>
     </option>
   </component>
