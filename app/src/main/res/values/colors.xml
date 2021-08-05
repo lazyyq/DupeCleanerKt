@@ -8,5 +8,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <color name="color_primary">#FF5D4037</color>
+    <color name="color_primary_variant">#422D27</color>
+    <color name="color_secondary">#FFE89F89</color>
+    <color name="color_secondary_variant">#FFA87363</color>
+
     <color name="toolbar_text_color">@color/white</color>
 </resources>

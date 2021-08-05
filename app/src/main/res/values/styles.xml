@@ -13,4 +13,12 @@
         <item name="android:textSize">18sp</item>
         <item name="android:textStyle">bold</item>
     </style>
+
+    <style name="ActionBarStyle" parent="Widget.MaterialComponents.ActionBar.Surface">
+        <item name="background">?colorPrimary</item>
+    </style>
+
+    <style name="ToolBarStyle" parent="Widget.MaterialComponents.Toolbar.PrimarySurface">
+        <item name="background">?colorPrimary</item>
+    </style>
 </resources>

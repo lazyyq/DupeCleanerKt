@@ -27,6 +27,28 @@
 
             <androidx.cardview.widget.CardView
                 style="@style/MainCardViewStyle"
+                android:layout_height="wrap_content">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="16dp">
+
+                    <TextView
+                        style="@style/MainCardTitleTextStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        android:text="Follow the steps below to find and remove duplicate music files."
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                style="@style/MainCardViewStyle"
                 bind:visibility="@{!viewModel.isPermissionGranted()}">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -161,97 +183,4 @@
             </androidx.cardview.widget.CardView>
         </LinearLayout>
     </ScrollView>
-    <!--<androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".ui.main.MainActivity">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <Button
-                android:id="@+id/btnRequestPermission"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="@{!viewModel.isPermissionGranted()}"
-                android:text="Request permission" />
-
-            <Button
-                android:id="@+id/btnPickFolder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="@{viewModel.isPermissionGranted()}"
-                android:text="Pick folder" />
-
-            <TextView
-                android:id="@+id/tvDirectory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{viewModel.chosenDirectory}" />
-
-            <Button
-                android:id="@+id/btnTest"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="@{viewModel.isDebug()}"
-                android:text="test" />
-
-            <Button
-                android:id="@+id/btnCreate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="@{viewModel.isDebug()}"
-                android:text="create" />
-
-            <Button
-                android:id="@+id/btnRemove"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="@{viewModel.isDebug()}"
-                android:text="remove" />
-
-            <androidx.appcompat.widget.AppCompatSpinner
-                android:id="@+id/spinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:enabled="@{viewModel.isFolderPicked()}"
-                android:entries="@array/match_modes"
-                android:selectedItemPosition="@={viewModel.spinnerSelectedItem}" />
-
-            <Button
-                android:id="@+id/btnGo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="@{viewModel.isScanReady()}"
-                android:text="Go!" />
-
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="@={viewModel.isDebug()}"
-                android:text="debug" />
-
-            <Button
-                android:id="@+id/btnRunMediaScanner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="@{viewModel.isFolderPicked() &amp;&amp; !viewModel.isMediaScannerRunning()}"
-                android:text="Run Media Scanner" />
-
-            <Button
-                android:id="@+id/prog"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="proress" />
-
-        </LinearLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>-->
 </layout>

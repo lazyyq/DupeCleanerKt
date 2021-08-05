@@ -19,15 +19,14 @@
         tools:context=".ui.scanner.ScannerActivity">
 
         <com.google.android.material.appbar.MaterialToolbar
+            style="?toolbarStyle"
             android:id="@+id/toolbar"
-            style="@style/Widget.MaterialComponents.Toolbar.PrimarySurface"
             android:layout_width="0dp"
             android:layout_height="?actionBarSize"
             app:contentInsetStart="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:titleTextColor="?colorSurface">
+            app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
                 android:id="@+id/toolbarContainer"
