@@ -1,16 +1,20 @@
 package kyklab.dupecleanerkt.ui.scanner
 
+import android.animation.Animator
 import android.app.ProgressDialog
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.updatePadding
 import androidx.databinding.DataBindingUtil
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.anggrayudi.storage.callback.FileCallback
 import com.anggrayudi.storage.file.DocumentFileCompat
 import com.anggrayudi.storage.file.getAbsolutePath
@@ -113,8 +117,44 @@ class ScannerActivity : AppCompatActivity() {
 
     private fun setupListView() {
         adapter = SectionedRecyclerViewAdapter()
-        binding.rv.layoutManager = LinearLayoutManager(this@ScannerActivity)
-        binding.rv.adapter = adapter
+        binding.included.rv.layoutManager = LinearLayoutManager(this@ScannerActivity)
+        binding.included.rv.adapter = adapter
+
+
+        binding.included.rv.clearOnScrollListeners()
+        binding.included.rv.updatePadding(bottom = binding.buttonsContainer.height)
+        binding.included.rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            /*override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (dy>0) {
+                    binding.bottomNavBar.visibility= View.GONE
+                    binding.bottomNavBar.animate().translationY(binding.bottomNavBar.height.toFloat()).setDuration(300).start();
+                } else if (dy<0) {
+                    binding.bottomNavBar.visibility= View.VISIBLE
+                    binding.bottomNavBar.animate().translationY(0f).setDuration(300).start();
+                }
+            }*/
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    binding.buttonsContainer.animate().translationY(binding.buttonsContainer.height.toFloat()).setListener(object: Animator.AnimatorListener{
+                        override fun onAnimationStart(p0: Animator?) {                        }
+
+                        override fun onAnimationEnd(p0: Animator?) {
+                            binding.buttonsContainer.visibility= View.GONE            }
+
+                        override fun onAnimationCancel(p0: Animator?) {                        }
+
+                        override fun onAnimationRepeat(p0: Animator?) {                        }
+
+                    }).setDuration(250).start();
+                } else {
+                    binding.buttonsContainer.animate().translationY(0f).setListener(null).setDuration(250).start();
+                    binding.buttonsContainer.visibility= View.VISIBLE
+                }
+            }
+        })
+
+
 
         // Add sections
         Log.e("SCAN", "launching scanner with $scanDirPath")

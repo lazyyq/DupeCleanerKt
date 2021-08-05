@@ -21,4 +21,13 @@
         <item name="windowSplashScreenBackground">@color/design_default_color_background</item>
         <item name="postSplashScreenTheme">@style/Theme.DupeCleanerKt</item>
     </style>
+
+    <style name="Theme.DupeCleanerKt.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.DupeCleanerKt.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.DupeCleanerKt.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

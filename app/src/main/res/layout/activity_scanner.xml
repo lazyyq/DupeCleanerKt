@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:bind="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ui.scanner.ScannerActivity">
 
     <data>
 
@@ -13,212 +13,125 @@
             type="kyklab.dupecleanerkt.ui.scanner.ScannerViewModel" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".ui.scanner.ScannerActivity">
+        android:layout_height="match_parent">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            style="?toolbarStyle"
-            android:id="@+id/toolbar"
-            android:layout_width="0dp"
-            android:layout_height="?actionBarSize"
-            app:contentInsetStart="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    style="?toolbarStyle"
+                    app:layout_scrollFlags="scroll|enterAlways"
+                    android:layout_width="match_parent"
+                    android:layout_height="?actionBarSize"
+                    app:contentInsetStart="0dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <LinearLayout
+                        android:id="@+id/toolbarContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp">
+
+                        <it.sephiroth.android.library.checkbox3state.CheckBox3
+                            android:id="@+id/checkBox"
+                            style="@style/Sephiroth.Widget.Checkbox3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="3dp"
+                            android:checked="true"
+                            android:enabled="@{viewModel.isScanDone() &amp;&amp; viewModel.totalDupes != 0}"
+                            app:sephiroth_checkbox3_checkableCycle="@array/sephiroth_checkbox3_cycleIndeterminate"
+                            app:sephiroth_checkbox3_indeterminate="true" />
+
+                        <TextView
+                            android:id="@+id/tvStatus"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:paddingEnd="16dp"
+                            android:text="@{viewModel.scanResultText}"
+                            android:textColor="@color/toolbar_text_color"
+                            tools:text="Total 369 duplicates found" />
+
+                        <ImageView
+                            android:id="@+id/ivSort"
+                            android:layout_width="42dp"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="end|center_vertical"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:clickable="@{viewModel.isScanDone() &amp;&amp; viewModel.totalDupes != 0}"
+                            android:scaleType="center"
+                            android:src="@drawable/ic_sort"
+                            android:tooltipText="Sort" />
+                    </LinearLayout>
+                </androidx.appcompat.widget.Toolbar>
+        </com.google.android.material.appbar.AppBarLayout>
+
+
+
+
+
+
+        <!-- Contents inside NestedScrollView are invisible without fillViewport. Why? -->
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+            android:fillViewport="true" >
+
+            <include
+                android:id="@+id/included"
+                layout="@layout/content_scanner"
+                app:viewModel="@{viewModel}"/>
+    </androidx.core.widget.NestedScrollView>
+
+
+
+
+
+
+
+
 
             <LinearLayout
-                android:id="@+id/toolbarContainer"
+                android:id="@+id/buttonsContainer"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
                 android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
+                android:paddingHorizontal="8dp">
 
-                <it.sephiroth.android.library.checkbox3state.CheckBox3
-                    android:id="@+id/checkBox"
-                    style="@style/Sephiroth.Widget.Checkbox3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="3dp"
-                    android:checked="true"
-                    android:enabled="@{viewModel.isScanDone() &amp;&amp; viewModel.totalDupes != 0}"
-                    app:sephiroth_checkbox3_checkableCycle="@array/sephiroth_checkbox3_cycleIndeterminate"
-                    app:sephiroth_checkbox3_indeterminate="true" />
-
-                <TextView
-                    android:id="@+id/tvStatus"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnMove"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:paddingEnd="16dp"
-                    android:text="@{viewModel.scanResultText}"
-                    android:textColor="@color/toolbar_text_color"
-                    tools:text="Total 369 duplicates found" />
+                    android:enabled="@{viewModel.isScanDone() &amp;&amp; viewModel.totalDupes != 0}"
+                    android:text="Move checked" />
 
-                <ImageView
-                    android:id="@+id/ivSort"
-                    android:layout_width="42dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="end|center_vertical"
-                    android:background="?selectableItemBackgroundBorderless"
-                    android:clickable="@{viewModel.isScanDone() &amp;&amp; viewModel.totalDupes != 0}"
-                    android:scaleType="center"
-                    android:src="@drawable/ic_sort"
-                    android:tooltipText="Sort" />
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="match_parent" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDelete"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:enabled="@{viewModel.isScanDone() &amp;&amp; viewModel.totalDupes != 0}"
+                    android:text="Delete checked" />
             </LinearLayout>
-        </com.google.android.material.appbar.MaterialToolbar>
 
-        <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
-            android:id="@+id/rv"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:fastScrollThumbColor="?colorPrimary"
-            app:fastScrollThumbInactiveColor="?colorPrimary"
-            app:layout_constraintBottom_toTopOf="@id/buttonsContainer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/toolbar"
-            app:layout_constraintVertical_bias="0.0" />
 
-        <!-- Block input to RecyclerView while scan is running -->
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintBottom_toBottomOf="@id/rv"
-            app:layout_constraintEnd_toEndOf="@id/rv"
-            app:layout_constraintStart_toStartOf="@id/rv"
-            app:layout_constraintTop_toTopOf="@id/rv"
-            bind:visibility="@{!viewModel.isScanDone()}" />
-
-        <com.google.android.material.progressindicator.LinearProgressIndicator
-            android:id="@+id/progressBar"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:indeterminate="true"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/toolbar"
-            app:minHideDelay="500"
-            bind:linearProgressIndicatorVisibility="@{!viewModel.isScanDone()}" />
-
-        <!-- <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@id/sortOptionsContainer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:visibility="@{viewModel.isScanDone()}" />
-
-        <LinearLayout
-            android:id="@+id/sortOptionsContainer"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingHorizontal="8dp"
-            app:layout_constraintBottom_toTopOf="@id/buttonsContainer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <RadioGroup
-                android:id="@+id/rgSortOptionsContainer"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checkedButton="@id/rbSortByPath"
-                android:gravity="center"
-                android:onCheckedChanged="@{viewModel.onSortOptionsCheckedChanged}"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/rbSortByPath"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:enabled="@{viewModel.isScanDone()}"
-                    android:text="Path" />
-
-                <RadioButton
-                    android:id="@+id/rbSortByLastModified"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:enabled="@{viewModel.isScanDone()}"
-                    android:text="Last Modified Date" />
-            </RadioGroup>
-
-            <View
-                android:layout_width="8dp"
-                android:layout_height="match_parent"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSort"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="@{viewModel.isScanDone()}"
-                android:minWidth="64dp"
-                android:text="Sort" />
-
-            <View
-                android:layout_width="8dp"
-                android:layout_height="match_parent"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSortReverse"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="@{viewModel.isScanDone()}"
-                android:minWidth="64dp"
-                android:text="Reversed" />
-
-        </LinearLayout> -->
-
-        <LinearLayout
-            android:id="@+id/buttonsContainer"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingHorizontal="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnMove"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:enabled="@{viewModel.isScanDone() &amp;&amp; viewModel.totalDupes != 0}"
-                android:text="Move checked" />
-
-            <View
-                android:layout_width="8dp"
-                android:layout_height="match_parent" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDelete"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:enabled="@{viewModel.isScanDone() &amp;&amp; viewModel.totalDupes != 0}"
-                android:text="Delete checked" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="No duplicates found!"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            bind:visibility="@{viewModel.isScanDone() &amp;&amp; viewModel.totalDupes == 0}"
-            tools:visibility="gone" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
