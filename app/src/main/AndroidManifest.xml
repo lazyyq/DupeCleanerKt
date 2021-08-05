@@ -16,8 +16,8 @@
         android:theme="@style/Theme.DupeCleanerKt">
         <activity android:name=".ui.scanner.ScannerActivity" />
         <activity
-            android:name=".ui.main.MainActivity"
             android:exported="true"
+            android:name=".ui.main.MainActivity"
             android:theme="@style/Theme.AppSplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
