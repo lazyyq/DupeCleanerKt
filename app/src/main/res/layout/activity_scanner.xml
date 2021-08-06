@@ -40,7 +40,7 @@
                     style="@style/Sephiroth.Widget.Checkbox3"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="3dp"
+                    android:layout_marginStart="7dp"
                     android:checked="true"
                     android:enabled="@{viewModel.isScanDone() &amp;&amp; viewModel.totalDupes != 0}"
                     app:sephiroth_checkbox3_checkableCycle="@array/sephiroth_checkbox3_cycleIndeterminate"
@@ -52,7 +52,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
-                    android:paddingEnd="16dp"
+                    android:paddingHorizontal="12dp"
                     android:text="@{viewModel.scanResultText}"
                     android:textColor="@color/toolbar_text_color"
                     tools:text="Total 369 duplicates found" />
@@ -78,10 +78,8 @@
             app:fastScrollThumbInactiveColor="?colorPrimary"
             app:layout_constraintBottom_toTopOf="@id/buttonsContainer"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/toolbar"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
         <!-- Block input to RecyclerView while scan is running -->
         <View
@@ -105,78 +103,6 @@
             app:layout_constraintTop_toBottomOf="@id/toolbar"
             app:minHideDelay="500"
             bind:linearProgressIndicatorVisibility="@{!viewModel.isScanDone()}" />
-
-        <!-- <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@id/sortOptionsContainer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:visibility="@{viewModel.isScanDone()}" />
-
-        <LinearLayout
-            android:id="@+id/sortOptionsContainer"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingHorizontal="8dp"
-            app:layout_constraintBottom_toTopOf="@id/buttonsContainer"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <RadioGroup
-                android:id="@+id/rgSortOptionsContainer"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checkedButton="@id/rbSortByPath"
-                android:gravity="center"
-                android:onCheckedChanged="@{viewModel.onSortOptionsCheckedChanged}"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/rbSortByPath"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:enabled="@{viewModel.isScanDone()}"
-                    android:text="Path" />
-
-                <RadioButton
-                    android:id="@+id/rbSortByLastModified"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:enabled="@{viewModel.isScanDone()}"
-                    android:text="Last Modified Date" />
-            </RadioGroup>
-
-            <View
-                android:layout_width="8dp"
-                android:layout_height="match_parent"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSort"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="@{viewModel.isScanDone()}"
-                android:minWidth="64dp"
-                android:text="Sort" />
-
-            <View
-                android:layout_width="8dp"
-                android:layout_height="match_parent"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSortReverse"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="@{viewModel.isScanDone()}"
-                android:minWidth="64dp"
-                android:text="Reversed" />
-
-        </LinearLayout> -->
 
         <LinearLayout
             android:id="@+id/buttonsContainer"

@@ -14,11 +14,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:paddingHorizontal="8dp">
+        android:paddingHorizontal="12dp">
 
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/cb"
-            android:layout_width="32dp"
+            android:gravity="center"
+            android:layout_width="42dp"
             android:layout_height="match_parent" />
 
         <LinearLayout

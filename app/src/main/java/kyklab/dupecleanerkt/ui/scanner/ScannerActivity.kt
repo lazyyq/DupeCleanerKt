@@ -65,6 +65,15 @@ class ScannerActivity : AppCompatActivity() {
 
         setupListView()
 
+        binding.btnMove.setOnClickListener { moveChecked() }
+        binding.btnDelete.setOnClickListener { deleteChecked() }
+    }
+
+    private fun setupToolbar() {
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.title = ""
+
+        // Toggle checkbox
         binding.checkBox.apply {
             setOnClickListener {
                 if (isChecked && !isIndeterminate) {
@@ -77,6 +86,7 @@ class ScannerActivity : AppCompatActivity() {
             }
         }
 
+        // Sort button
         binding.ivSort.setOnClickListener {
             val items = arrayOf(
                 "File path - Ascending",
@@ -98,17 +108,6 @@ class ScannerActivity : AppCompatActivity() {
                 }
                 .show()
         }
-
-//        binding.btnSort.setOnClickListener { sort() }
-//        binding.btnSortReverse.setOnClickListener { sort(true) }
-
-        binding.btnMove.setOnClickListener { moveChecked() }
-        binding.btnDelete.setOnClickListener { deleteChecked() }
-    }
-
-    private fun setupToolbar() {
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = ""
     }
 
     private fun setupListView() {
@@ -138,6 +137,7 @@ class ScannerActivity : AppCompatActivity() {
                     totalChecked.value = getCheckedItemsCount()
                     isScanDone.value = true
                 }
+                Log.e("SCAN", "total sections ${adapter.sectionCount}")
             }
         }
     }
@@ -174,10 +174,10 @@ class ScannerActivity : AppCompatActivity() {
                     return@registerForActivityResult
                 }
             val targetDirPath = targetDir.getAbsolutePath(this)
-            _moveChecked(targetDirPath)
+            moveCheckedInternal(targetDirPath)
         }
 
-    private fun _moveChecked(targetDirPath: String) {
+    private fun moveCheckedInternal(targetDirPath: String) {
         // Show progress dialog while moving files
         val moveProgressDialog = ProgressDialog(this).apply {
             setTitle("Moving files")
@@ -304,13 +304,13 @@ class ScannerActivity : AppCompatActivity() {
     private fun deleteChecked() {
         AlertDialog.Builder(this)
             .setTitle("Are you sure?")
-            .setPositiveButton("YES") { dialog, which -> _deleteChecked() }
+            .setPositiveButton("YES") { dialog, which -> deleteCheckedInternal() }
             .setNegativeButton("NO", null)
             .setCancelable(false)
             .show()
     }
 
-    private fun _deleteChecked() {
+    private fun deleteCheckedInternal() {
         val deleteProgressDialog = ProgressDialog(this).apply {
             setTitle("Deleting duplicates")
             setMessage("Please keep the app open while during operation")
@@ -403,7 +403,9 @@ class ScannerActivity : AppCompatActivity() {
         }
 
         viewModel.totalChecked.value = getCheckedItemsCount()
-        adapter.notifyDataSetChanged()
+        adapter.notifyItemRangeChanged(
+            0, adapter.itemCount,
+            MusicSection.PAYLOAD_TRIGGER_CHECKBOX_STATE_UPDATE)
     }
 
     private fun SectionedRecyclerViewAdapter.forEachSection(block: (section: Section) -> Unit) {

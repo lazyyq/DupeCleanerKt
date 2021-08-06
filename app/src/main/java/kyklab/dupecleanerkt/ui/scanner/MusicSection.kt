@@ -1,5 +1,6 @@
 package kyklab.dupecleanerkt.ui.scanner
 
+import android.util.Log
 import android.view.View
 import android.widget.CheckBox
 import android.widget.ImageView
@@ -15,13 +16,16 @@ import kyklab.dupecleanerkt.utils.getAlbumArtUri
 
 class MusicSection(
     val list: List<Music>,
-    private val clickListener: ClickListener? = null,
+    private val itemCheckChangeListener: ItemCheckChangeListener? = null,
 ) : Section(
     SectionParameters.builder()
         .itemResourceId(R.layout.music_section_item)
         .headerResourceId(R.layout.music_section_header)
         .build()
 ) {
+    companion object {
+        const val PAYLOAD_TRIGGER_CHECKBOX_STATE_UPDATE = "trigger"
+    }
 
     val checkedIndexes = Array(list.size) { it != 0 /* Leave first item unchecked */ }
 
@@ -38,14 +42,25 @@ class MusicSection(
                 "${music.durationString}  |  Last modified at ${music.dateModifiedString}"
             tvPath.text = music.path
 
-            cb.setOnCheckedChangeListener(null)
             cb.isChecked = checkedIndexes[position]
-            cb.setOnCheckedChangeListener { buttonView, isChecked ->
-                checkedIndexes[position] = isChecked
-                clickListener?.onItemCheckBoxChanged(
-                    this@MusicSection, position, isChecked
-                )
+        }
+    }
+
+    override fun onBindItemViewHolder(
+        holder: RecyclerView.ViewHolder?,
+        position: Int,
+        payloads: MutableList<Any>?,
+    ) {
+        if (payloads?.isNotEmpty() == true) {
+            (holder as? MyItemViewHolder)?.apply {
+                payloads.forEach { payload ->
+                    if (payload is String && payload == PAYLOAD_TRIGGER_CHECKBOX_STATE_UPDATE) {
+                        holder.cb.isChecked = checkedIndexes[position]
+                    }
+                }
             }
+        } else {
+            super.onBindItemViewHolder(holder, position, payloads)
         }
     }
 
@@ -67,10 +82,9 @@ class MusicSection(
     private fun Music.getArtistAndAlbumText() =
         "${if (artist.isNotEmpty()) artist else "Unknown artist"} - ${if (album.isNotEmpty()) album else "Unknown album"}"
 
-    fun interface ClickListener {
-        fun onItemCheckBoxChanged(
-            section: MusicSection?, itemAdapterPosition: Int,
-            newState: Boolean
+    fun interface ItemCheckChangeListener {
+        fun onItemCheckChanged(
+            section: MusicSection?, itemAdapterPosition: Int, newState: Boolean,
         )
     }
 
@@ -80,7 +94,7 @@ class MusicSection(
         val tvArtistAndAlbum: TextView = itemView.findViewById(R.id.tvArtistAndAlbum)
     }
 
-    class MyItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class MyItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val cardView: MaterialCardView = itemView.findViewById(R.id.cardView)
         val cb: CheckBox = itemView.findViewById(R.id.cb)
         val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
@@ -89,7 +103,19 @@ class MusicSection(
         val tvPath: TextView = itemView.findViewById(R.id.tvPath)
 
         init {
-            cardView.setOnClickListener { cb.isChecked = !cb.isChecked }
+            cb.setOnClickListener {
+                cbChecked(cb, adapterPosition)
+            }
+            cardView.setOnClickListener {
+                cbChecked(cb, adapterPosition)
+            }
         }
+    }
+
+    private fun cbChecked(checkBox: CheckBox, position: Int) {
+        checkedIndexes[position] = checkBox.isChecked
+        itemCheckChangeListener?.onItemCheckChanged(
+            this@MusicSection, position, checkBox.isChecked
+        )
     }
 }
