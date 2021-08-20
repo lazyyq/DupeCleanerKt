@@ -29,14 +29,15 @@
                 style="@style/MainCardViewStyle"
                 android:layout_height="wrap_content">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:orientation="vertical"
                     android:padding="16dp">
 
                     <TextView
                         style="@style/MainCardTitleTextStyle"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="8dp"
                         android:text="Follow the steps below to find and remove duplicate music files."
@@ -44,16 +45,17 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
                 style="@style/MainCardViewStyle"
                 bind:visibility="@{!viewModel.isPermissionGranted()}">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:orientation="vertical"
                     android:padding="16dp">
 
                     <TextView
@@ -61,53 +63,45 @@
                         style="@style/MainCardTitleTextStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Step 0. Grant permissions"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        android:text="Step 0. Grant permissions" />
+
+                    <Space style="@style/MainCardTitleSpace" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="8dp"
-                        android:text="Some permissions are necessary for the app to work."
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/tvGrantPermissionsTitle" />
+                        android:text="Some permissions are necessary for the app to work." />
 
                     <Button
                         android:id="@+id/btnGrantPermissions"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Grant permissions"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                        android:text="Grant permissions" />
+                </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView style="@style/MainCardViewStyle">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:orientation="vertical"
                     android:padding="16dp">
 
                     <TextView
                         style="@style/MainCardTitleTextStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Step 1. Choose directory"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        android:text="Step 1. Choose directory" />
+
+                    <Space style="@style/MainCardTitleSpace" />
 
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:focusable="false"
-                        app:layout_constraintBottom_toTopOf="@id/btnChooseDirectory"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent">
+                        android:focusable="false">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:layout_width="match_parent"
@@ -119,7 +113,7 @@
 
                     <Button
                         android:id="@+id/btnChooseDirectory"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:enabled="@{viewModel.isPermissionGranted()}"
                         android:text="Choose Directory"
@@ -127,60 +121,56 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent" />
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                </LinearLayout>
 
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView style="@style/MainCardViewStyle">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:orientation="vertical"
                     android:padding="16dp">
 
                     <TextView
                         style="@style/MainCardTitleTextStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Step 2. Choose search option"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        android:text="Step 2. Choose search option" />
+
+                    <Space style="@style/MainCardTitleSpace" />
 
                     <androidx.appcompat.widget.AppCompatSpinner
                         android:id="@+id/spinner"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:enabled="@{viewModel.isPermissionGranted() &amp;&amp; viewModel.isFolderPicked()}"
                         android:entries="@array/match_modes"
-                        android:selectedItemPosition="@={viewModel.spinnerSelectedItem}"
-                        app:layout_constraintBottom_toTopOf="@id/cbRunMediaScannerFirst"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent" />
+                        android:selectedItemPosition="@={viewModel.spinnerSelectedItem}" />
 
                     <androidx.appcompat.widget.AppCompatCheckBox
                         android:id="@+id/cbRunMediaScannerFirst"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:checked="@={viewModel.runMediaScannerFirst}"
                         android:enabled="@{viewModel.isPermissionGranted() &amp;&amp; viewModel.isFolderPicked()}"
-                        android:text="Run media scanner first"
-                        app:layout_constraintBottom_toTopOf="@id/btnGo"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent" />
+                        android:text="Run media scanner first" />
 
                     <Button
                         android:id="@+id/btnGo"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:enabled="@{viewModel.isPermissionGranted() &amp;&amp; viewModel.isFolderPicked()}"
-                        android:text="Go!"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent" />
+                        android:text="Go!" />
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                </LinearLayout>
 
             </androidx.cardview.widget.CardView>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
         </LinearLayout>
     </ScrollView>
 </layout>

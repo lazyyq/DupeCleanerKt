@@ -1,6 +1,5 @@
 package kyklab.dupecleanerkt.ui.scanner
 
-import android.util.Log
 import android.view.View
 import android.widget.CheckBox
 import android.widget.ImageView
@@ -12,12 +11,13 @@ import io.github.luizgrp.sectionedrecyclerviewadapter.Section
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters
 import kyklab.dupecleanerkt.R
 import kyklab.dupecleanerkt.data.Music
+import kyklab.dupecleanerkt.utils.FastScrollableSection
 import kyklab.dupecleanerkt.utils.getAlbumArtUri
 
 class MusicSection(
     val list: List<Music>,
     private val itemCheckChangeListener: ItemCheckChangeListener? = null,
-) : Section(
+) : FastScrollableSection(
     SectionParameters.builder()
         .itemResourceId(R.layout.music_section_item)
         .headerResourceId(R.layout.music_section_header)
@@ -28,6 +28,8 @@ class MusicSection(
     }
 
     val checkedIndexes = Array(list.size) { it != 0 /* Leave first item unchecked */ }
+
+    private val itemInitial = (list.getOrNull(0)?.title?.get(0) ?: ' ').toString()
 
     override fun getContentItemsTotal() = list.size
 
@@ -118,4 +120,6 @@ class MusicSection(
             this@MusicSection, position, checkBox.isChecked
         )
     }
+
+    override fun getItemInitial(position: Int) = itemInitial
 }

@@ -3,12 +3,16 @@ package kyklab.dupecleanerkt.dupemanager
 import android.content.Context
 import android.provider.MediaStore
 import android.util.Log
+import com.anggrayudi.storage.file.DocumentFileCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kyklab.dupecleanerkt.data.Music
 import kyklab.dupecleanerkt.utils.scanMediaFiles
 import kyklab.dupecleanerkt.utils.untilLast
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.*
 
 
@@ -52,14 +56,14 @@ class DupeManager(
     fun scan(runMediaScannerFirst: Boolean = false, callback: ScanCompletedCallback? = null) {
         if (runMediaScannerFirst) {
             context.scanMediaFiles(path) { path, uri ->
-                _scan(callback)
+                scanInternal(callback)
             }
         } else {
-            _scan(callback)
+            scanInternal(callback)
         }
     }
 
-    private fun _scan(callback: ScanCompletedCallback? = null) {
+    private fun scanInternal(callback: ScanCompletedCallback? = null) {
         scope.launch(Dispatchers.IO) {
             /* Query mediastore db for music files and add to found music list */
 
@@ -101,30 +105,33 @@ class DupeManager(
                 dupeList.ensureCapacity(cursor.count)
 
                 cursor.untilLast {
-                    val music = Music(
-                        path = it.getString(dataColumn),
-                        title = it.getString(titleColumn),
-                        artist = it.getString(artistColumn),
-                        album = it.getString(albumColumn),
-                        albumId = it.getLong(albumIdColumn),
-                        duration = it.getLong(durationColumn),
-                        dateModified = it.getLong(dateModifiedColumn),
-                    )
+                    val musicPath = it.getString(dataColumn)
+                    if (File(musicPath).exists()) {
+                        val music = Music(
+                            path = musicPath,
+                            title = it.getString(titleColumn),
+                            artist = it.getString(artistColumn),
+                            album = it.getString(albumColumn),
+                            albumId = it.getLong(albumIdColumn),
+                            duration = it.getLong(durationColumn),
+                            dateModified = it.getLong(dateModifiedColumn),
+                        )
 
-                    val key = generateHashKey(music)
-                    if (hashMap.containsKey(key)) {
-                        hashMap[key]?.add(music)
-                    } else {
-                        val list = ArrayList<Music>()
-                        list.add(music)
-                        dupeList.add(list)
-                        hashMap[key] = list
-                    }
-                    // updater.accept(music)
-                    ++totalScanned
-                    // if (updater != null) updater.accept(music)
-                }
-            }
+                        val key = generateHashKey(music)
+                        if (hashMap.containsKey(key)) {
+                            hashMap[key]?.add(music)
+                        } else {
+                            val list = ArrayList<Music>()
+                            list.add(music)
+                            dupeList.add(list)
+                            hashMap[key] = list
+                        }
+                        // updater.accept(music)
+                        ++totalScanned
+                        // if (updater != null) updater.accept(music)
+                    } // Check file exists
+                } // Cursor
+            } // Mediastore query
 
             /* Query done */
 
@@ -138,19 +145,19 @@ class DupeManager(
         }
     }
 
-    fun sort(sortMode: SortMode, callback: SortCompletedCallback? = null) {
+    fun sort(sortMode: DupeManager.SortMode, callback: SortCompletedCallback? = null) {
         scope.launch(Dispatchers.IO) {
             when (sortMode) {
-                SortMode.PATH_ASC ->
+                DupeManager.SortMode.PATH_ASC ->
                     dupeList.forEach { list -> list.sortBy { music -> music.path } }
 
-                SortMode.PATH_DSC ->
+                DupeManager.SortMode.PATH_DSC ->
                     dupeList.forEach { list -> list.sortByDescending { music -> music.path } }
 
-                SortMode.LAST_MODIFIED_DATE_ASC ->
+                DupeManager.SortMode.LAST_MODIFIED_DATE_ASC ->
                     dupeList.forEach { list -> list.sortBy { music -> music.dateModified } }
 
-                SortMode.LAST_MODIFIED_DATE_DSC ->
+                DupeManager.SortMode.LAST_MODIFIED_DATE_DSC ->
                     dupeList.forEach { list -> list.sortByDescending { music -> music.dateModified } }
 
             }
@@ -174,9 +181,9 @@ class DupeManager(
 
     private fun generateHashKey(music: Music): String {
         return when (matchMode) {
-            MatchMode.TITLE -> music.title
-            MatchMode.TITLE_ARTIST -> "${music.title}\n\n${music.artist}"
-            MatchMode.TITLE_ARTIST_ALBUM -> "${music.title}\n\n${music.artist}\n\n${music.album}"
+            DupeManager.MatchMode.TITLE -> music.title
+            DupeManager.MatchMode.TITLE_ARTIST -> "${music.title}\n\n${music.artist}"
+            DupeManager.MatchMode.TITLE_ARTIST_ALBUM -> "${music.title}\n\n${music.artist}\n\n${music.album}"
         }
     }
 }

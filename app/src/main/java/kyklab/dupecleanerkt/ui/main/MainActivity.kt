@@ -25,7 +25,6 @@ import kyklab.dupecleanerkt.databinding.ActivityMainBinding
 import kyklab.dupecleanerkt.ui.scanner.ScannerActivity
 import kyklab.dupecleanerkt.utils.Prefs
 import kyklab.dupecleanerkt.utils.scanMediaFiles
-import java.io.File
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -150,6 +149,7 @@ class MainActivity : AppCompatActivity() {
         folderPickerLauncher.launch(null)
     }
 
+    /*
     private fun test() {
         val path = "/storage/emulated/0/Android/data/.nomedia"
         val file = DocumentFileCompat.fromFullPath(this, path)
@@ -174,6 +174,7 @@ class MainActivity : AppCompatActivity() {
         val result = file?.delete()
         Log.e("remove", "result: $result")
     }
+    */
 
     private fun go() {
         if (path == null) {

@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import kyklab.dupecleanerkt.R
 import kyklab.dupecleanerkt.databinding.ActivityScannerBinding
 import kyklab.dupecleanerkt.dupemanager.DupeManager
+import kyklab.dupecleanerkt.utils.FastScrollableSectionedRecyclerViewAdapter
 import kyklab.dupecleanerkt.utils.scanMediaFiles
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -43,7 +44,7 @@ class ScannerActivity : AppCompatActivity() {
     private lateinit var binding: ActivityScannerBinding
 
     private lateinit var dm: DupeManager
-    private lateinit var adapter: SectionedRecyclerViewAdapter
+    private lateinit var adapter: FastScrollableSectionedRecyclerViewAdapter
 
     private lateinit var scanDirPath: String
     private lateinit var matchMode: DupeManager.MatchMode
@@ -111,7 +112,7 @@ class ScannerActivity : AppCompatActivity() {
     }
 
     private fun setupListView() {
-        adapter = SectionedRecyclerViewAdapter()
+        adapter = FastScrollableSectionedRecyclerViewAdapter()
         binding.rv.layoutManager = LinearLayoutManager(this@ScannerActivity)
         binding.rv.adapter = adapter
 
