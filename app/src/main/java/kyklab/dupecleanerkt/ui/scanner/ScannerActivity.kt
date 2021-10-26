@@ -8,6 +8,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.documentfile.provider.DocumentFile
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -40,6 +41,24 @@ class ScannerActivity : AppCompatActivity() {
         NONE,
     }
 
+    /**
+     * Options for sorting sections
+     */
+    enum class SortSectionsOptions {
+        TITLE,
+        ARTIST,
+    }
+
+    /**
+     * Options for sorting items inside each section
+     */
+    enum class SortItemsOptions {
+        FILE_PATH_ASC,
+        FILE_PATH_DSC,
+        LAST_MODIFIED_DATE_ASC,
+        LAST_MODIFIED_DATE_DSC,
+    }
+
     private lateinit var viewModel: ScannerViewModel
     private lateinit var binding: ActivityScannerBinding
 
@@ -49,6 +68,11 @@ class ScannerActivity : AppCompatActivity() {
     private lateinit var scanDirPath: String
     private lateinit var matchMode: DupeManager.MatchMode
     private var runMediaScannerFirst = false
+
+    private lateinit var sortOptionsDialogListener: SortOptionsDialogFragment.SortOptionsDialogListener
+
+    private var selectedSortSectionsOption: SortSectionsOptions? = null
+    private var selectedSortItemsOption: SortItemsOptions? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,27 +111,37 @@ class ScannerActivity : AppCompatActivity() {
             }
         }
 
+        // Set sort options dialog callback listener
+        sortOptionsDialogListener = object : SortOptionsDialogFragment.SortOptionsDialogListener {
+            override fun onDialogPositiveClick(
+                dialog: DialogFragment,
+                sortSectionsOption: SortSectionsOptions?,
+                sortItemsOption: SortItemsOptions?
+            ) {
+                selectedSortSectionsOption = sortSectionsOption
+                selectedSortItemsOption = sortItemsOption
+                sort(sortSectionsOption, sortItemsOption)
+            }
+
+            override fun onDialogNegativeClick(
+                dialog: DialogFragment,
+                sortSectionsOption: SortSectionsOptions?,
+                sortItemsOption: SortItemsOptions?
+            ) {
+
+            }
+        }
+
         // Sort button
         binding.ivSort.setOnClickListener {
-            val items = arrayOf(
-                "File path - Ascending",
-                "File path - Descending",
-                "Last modified date - Ascending",
-                "Last modified date - Descending",
+            SortOptionsDialogFragment(
+                sortOptionsDialogListener,
+                selectedSortSectionsOption,
+                selectedSortItemsOption
+            ).show(
+                supportFragmentManager,
+                "sortOptions"
             )
-
-            AlertDialog.Builder(this)
-                .setTitle("Sort options")
-                .setItems(items) { dialog, which ->
-                    when (which) {
-                        0 -> sort(DupeManager.SortMode.PATH_ASC)
-                        1 -> sort(DupeManager.SortMode.PATH_DSC)
-                        2 -> sort(DupeManager.SortMode.LAST_MODIFIED_DATE_ASC)
-                        3 -> sort(DupeManager.SortMode.LAST_MODIFIED_DATE_DSC)
-                        else -> throw RuntimeException("Unexpected sort option selected")
-                    }
-                }
-                .show()
         }
     }
 
@@ -122,13 +156,7 @@ class ScannerActivity : AppCompatActivity() {
         dm.scan(runMediaScannerFirst) { duplicates, totalScanned, totalDuplicates ->
             Log.e("SCAN", "scanned $totalScanned, found $totalDuplicates")
 
-            duplicates.forEach {
-                val section = MusicSection(it) { section, itemAdapterPosition, newState ->
-                    if (newState) viewModel.totalChecked.value = viewModel.totalChecked.value!! + 1
-                    else viewModel.totalChecked.value = viewModel.totalChecked.value!! - 1
-                }
-                adapter.addSection(section)
-            }
+            addSections()
 
             runOnUiThread {
                 adapter.notifyDataSetChanged()
@@ -143,15 +171,51 @@ class ScannerActivity : AppCompatActivity() {
         }
     }
 
-    private fun sort(sortMode: DupeManager.SortMode) {
+    private fun addSections() {
+        // TODO: Compare performance with previous version
+        dm.dupeList.asSequence().map {
+            MusicSection(it) { section, itemAdapterPosition, newState ->
+                if (newState) viewModel.totalChecked.value = viewModel.totalChecked.value!! + 1
+                else viewModel.totalChecked.value = viewModel.totalChecked.value!! - 1
+            }
+        }.forEach { adapter.addSection(it) }
+    }
+
+    private fun sort(sortSectionsOption: SortSectionsOptions?, sortItemsOption: SortItemsOptions?) {
         viewModel.isScanDone.value = false
-        dm.sort(sortMode) { duplicates ->
+
+        lifecycleScope.launch(Dispatchers.Default) {
+            // Sort items inside sections first
+            when (sortItemsOption) {
+                SortItemsOptions.FILE_PATH_ASC ->
+                    dm.dupeList.forEach { list -> list.sortBy { music -> music.path } }
+                SortItemsOptions.FILE_PATH_DSC ->
+                    dm.dupeList.forEach { list -> list.sortByDescending { music -> music.path } }
+                SortItemsOptions.LAST_MODIFIED_DATE_ASC ->
+                    dm.dupeList.forEach { list -> list.sortBy { music -> music.dateModified } }
+                SortItemsOptions.LAST_MODIFIED_DATE_DSC ->
+                    dm.dupeList.forEach { list -> list.sortByDescending { music -> music.dateModified } }
+            }
+
+            // Then sort sections
+            when (sortSectionsOption) {
+                SortSectionsOptions.TITLE ->
+                    dm.dupeList.sortBy { it.first().title }
+                SortSectionsOptions.ARTIST ->
+                    dm.dupeList.sortBy { it.first().artist }
+            }
+
+            adapter.removeAllSections()
+            addSections()
+
+            // Update UI
             runOnUiThread {
                 adapter.notifyDataSetChanged()
                 viewModel.isScanDone.value = true
                 // Reset checked states
                 binding.checkBox.setChecked(true, true)
                 check(CheckMode.ONLY_DUPLICATES)
+                val dd = dm.dupeList
             }
         }
     }
@@ -406,7 +470,8 @@ class ScannerActivity : AppCompatActivity() {
         viewModel.totalChecked.value = getCheckedItemsCount()
         adapter.notifyItemRangeChanged(
             0, adapter.itemCount,
-            MusicSection.PAYLOAD_TRIGGER_CHECKBOX_STATE_UPDATE)
+            MusicSection.PAYLOAD_TRIGGER_CHECKBOX_STATE_UPDATE
+        )
     }
 
     private fun SectionedRecyclerViewAdapter.forEachSection(block: (section: Section) -> Unit) {

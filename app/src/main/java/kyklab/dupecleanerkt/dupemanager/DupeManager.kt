@@ -3,7 +3,6 @@ package kyklab.dupecleanerkt.dupemanager
 import android.content.Context
 import android.provider.MediaStore
 import android.util.Log
-import com.anggrayudi.storage.file.DocumentFileCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -11,8 +10,6 @@ import kyklab.dupecleanerkt.data.Music
 import kyklab.dupecleanerkt.utils.scanMediaFiles
 import kyklab.dupecleanerkt.utils.untilLast
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
 import java.util.*
 
 
@@ -28,13 +25,6 @@ class DupeManager(
         private fun log(msg: String) = Log.e(TAG, msg)
     }
 
-    enum class SortMode {
-        PATH_ASC,
-        PATH_DSC,
-        LAST_MODIFIED_DATE_ASC,
-        LAST_MODIFIED_DATE_DSC,
-    }
-
     enum class MatchMode {
         TITLE,
         TITLE_ARTIST,
@@ -44,14 +34,14 @@ class DupeManager(
     // List of files found under selected directory, ready to be analyzed for duplicates
     // val foundFiles: MutableList<Music> = LinkedList()
 
-    // List of lists containing duplicates
-    private var dupeList: ArrayList<MutableList<Music>> = ArrayList(100)
-
     // Map of specific file and list of its duplicates
     private val hashMap: HashMap<String, MutableList<Music>> = HashMap()
 
-    private var totalScanned = 0 // Number of total analyzed files
-    private var totalDuplicates = 0 // Number of total duplicates
+    // List of lists containing duplicates
+    var dupeList: ArrayList<MutableList<Music>> = ArrayList(100)
+
+    var totalScanned = 0 // Number of total analyzed files
+    var totalDuplicates = 0 // Number of total duplicates
 
     fun scan(runMediaScannerFirst: Boolean = false, callback: ScanCompletedCallback? = null) {
         if (runMediaScannerFirst) {
@@ -145,38 +135,8 @@ class DupeManager(
         }
     }
 
-    fun sort(sortMode: DupeManager.SortMode, callback: SortCompletedCallback? = null) {
-        scope.launch(Dispatchers.IO) {
-            when (sortMode) {
-                DupeManager.SortMode.PATH_ASC ->
-                    dupeList.forEach { list -> list.sortBy { music -> music.path } }
-
-                DupeManager.SortMode.PATH_DSC ->
-                    dupeList.forEach { list -> list.sortByDescending { music -> music.path } }
-
-                DupeManager.SortMode.LAST_MODIFIED_DATE_ASC ->
-                    dupeList.forEach { list -> list.sortBy { music -> music.dateModified } }
-
-                DupeManager.SortMode.LAST_MODIFIED_DATE_DSC ->
-                    dupeList.forEach { list -> list.sortByDescending { music -> music.dateModified } }
-
-            }
-            callback?.onSortDone(dupeList)
-        }
-    }
-
-    /*
-    fun interface Pattern {
-        fun compare(m1: Music, m2: Music): Boolean
-    }
-    */
-
     fun interface ScanCompletedCallback {
         fun onScanDone(duplicates: List<List<Music>>, totalScanned: Int, totalDuplicates: Int)
-    }
-
-    fun interface SortCompletedCallback {
-        fun onSortDone(duplicates: List<List<Music>>)
     }
 
     private fun generateHashKey(music: Music): String {

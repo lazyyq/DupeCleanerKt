@@ -40,7 +40,7 @@ class MusicSection(
             tvTitle.text = music.title
             tvArtistAndAlbum.text = music.getArtistAndAlbumText()
             tvDuration.text =
-                "${music.durationString}  |  Last modified at ${music.dateModifiedString}"
+                "${music.durationString}  |  Last modified at ${music.dateModifiedString} | ${music.dateModified}"
             tvPath.text = music.path
 
             cb.isChecked = checkedIndexes[position]
