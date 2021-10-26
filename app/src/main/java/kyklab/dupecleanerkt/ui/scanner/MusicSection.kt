@@ -7,7 +7,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView
-import io.github.luizgrp.sectionedrecyclerviewadapter.Section
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters
 import kyklab.dupecleanerkt.R
 import kyklab.dupecleanerkt.data.Music
@@ -45,6 +44,13 @@ class MusicSection(
             tvPath.text = music.path
 
             cb.isChecked = checkedIndexes[position]
+            cb.setOnClickListener {
+                cbChecked(cb, position)
+            }
+            cardView.setOnClickListener {
+                cb.isChecked = !cb.isChecked
+                cbChecked(cb, position)
+            }
         }
     }
 
@@ -96,22 +102,13 @@ class MusicSection(
         val tvArtistAndAlbum: TextView = itemView.findViewById(R.id.tvArtistAndAlbum)
     }
 
-    inner class MyItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class MyItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val cardView: MaterialCardView = itemView.findViewById(R.id.cardView)
         val cb: CheckBox = itemView.findViewById(R.id.cb)
         val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
         val tvArtistAndAlbum: TextView = itemView.findViewById(R.id.tvArtistAndAlbum)
         val tvDuration: TextView = itemView.findViewById(R.id.tvDuration)
         val tvPath: TextView = itemView.findViewById(R.id.tvPath)
-
-        init {
-            cb.setOnClickListener {
-                cbChecked(cb, adapterPosition)
-            }
-            cardView.setOnClickListener {
-                cbChecked(cb, adapterPosition)
-            }
-        }
     }
 
     private fun cbChecked(checkBox: CheckBox, position: Int) {
