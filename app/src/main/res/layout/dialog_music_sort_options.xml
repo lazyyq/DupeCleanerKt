@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minWidth="240dp"
+        android:orientation="vertical"
+        android:paddingVertical="16dp"
+        android:paddingHorizontal="24dp">
+
+        <TextView
+            style="@style/TextAppearance.AppCompat.Title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="Sort sections by" />
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/rbTitle"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:checked="true"
+                android:text="Title" />
+
+            <RadioButton
+                android:id="@+id/rbArtist"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:text="Artist" />
+
+            <RadioButton
+                android:id="@+id/rbSectionLastModifiedDate"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:text="Last Modified Date" />
+        </RadioGroup>
+
+        <TextView
+            style="@style/TextAppearance.AppCompat.Title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="8dp"
+            android:text="Sort music by" />
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/rbFilePath"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:checked="true"
+                android:text="File path" />
+
+            <RadioButton
+                android:id="@+id/rbItemLastModifiedDate"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:text="Last Modified Date" />
+        </RadioGroup>
+
+    </LinearLayout>
+
+</ScrollView>

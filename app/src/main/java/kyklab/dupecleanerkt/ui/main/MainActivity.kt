@@ -1,6 +1,9 @@
 package kyklab.dupecleanerkt.ui.main
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -8,6 +11,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.view.View
+import android.widget.LinearLayout
+import android.widget.RadioButton
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -15,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import com.anggrayudi.storage.SimpleStorage
 import com.anggrayudi.storage.file.DocumentFileCompat
@@ -24,7 +31,7 @@ import kyklab.dupecleanerkt.R
 import kyklab.dupecleanerkt.databinding.ActivityMainBinding
 import kyklab.dupecleanerkt.ui.scanner.ScannerActivity
 import kyklab.dupecleanerkt.utils.Prefs
-import kyklab.dupecleanerkt.utils.scanMediaFiles
+import kyklab.dupecleanerkt.utils.isAtLeastR
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -45,18 +52,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     private val simpleStorage = SimpleStorage(this)
-
-    /*
-    /**
-     * Old code for requesting directory permission
-     */
-    private val folderPickerIntentLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                result.data?.let { intent -> handleDirectoryUri(intent) }
-            }
-        }
-    */
     private var path = Prefs.lastChosenDirPath
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,11 +72,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnGrantPermissions.setOnClickListener { requestPermissions() }
         binding.btnChooseDirectory.setOnClickListener { openFolderPicker() }
-//        binding.btnTest.setOnClickListener { test() }
-//        binding.btnCreate.setOnClickListener { create() }
-//        binding.btnRemove.setOnClickListener { remove() }
         binding.btnGo.setOnClickListener { go() }
-//        binding.btnRunMediaScanner.setOnClickListener { runMediaScanner() }
 
         setupSpinner()
     }
@@ -137,44 +128,8 @@ class MainActivity : AppCompatActivity() {
         }
 
     private fun openFolderPicker() {
-//        simpleStorage.storageAccessCallback = storageAccessCallback
-//        simpleStorage.requestStorageAccess()
-
-//        simpleStorage.folderPickerCallback = folderPickerCallback
-//        simpleStorage.openFolderPicker()
-
-//        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-//        startActivityForResult(intent, 1)
-
         folderPickerLauncher.launch(null)
     }
-
-    /*
-    private fun test() {
-        val path = "/storage/emulated/0/Android/data/.nomedia"
-        val file = DocumentFileCompat.fromFullPath(this, path)
-        file?.name?.let { Log.e("TEST", it) }
-    }
-
-    private fun create() {
-        val path = "/storage/emulated/0/test"
-        val file = DocumentFileCompat.fromFullPath(this, path)
-        if (file == null) {
-            Log.e("create()", "file is null")
-        }
-        if (file == null || !file.exists()) {
-            val result = File(path).createNewFile()
-            Log.e("Create new file", "result: $result")
-        }
-    }
-
-    private fun remove() {
-        val path = "/storage/emulated/0/test"
-        val file = DocumentFileCompat.fromFullPath(this, path)
-        val result = file?.delete()
-        Log.e("remove", "result: $result")
-    }
-    */
 
     private fun go() {
         if (path == null) {
@@ -195,19 +150,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun runMediaScanner() {
-        viewModel.isMediaScannerRunning.value = true
-        val start = System.currentTimeMillis()
-        scanMediaFiles(path!!) { path, uri ->
-            val end = System.currentTimeMillis()
-            Toast.makeText(this, "Finished scanning, took ${end - start}ms", Toast.LENGTH_SHORT)
-                .show()
-            runOnUiThread {
-                viewModel.isMediaScannerRunning.value = false
-            }
-        }
-    }
-
     private fun setupSpinner() {
         viewModel.spinnerSelectedItem.observe(this) {
             Log.e("Observer", "Spinner value updated: $it")
@@ -216,8 +158,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        // Mandatory for Activity, but not for Fragment
-//        Log.e("RESULT", "$requestCode, $resultCode, $data")
         simpleStorage.onActivityResult(requestCode, resultCode, data)
     }
 
@@ -230,24 +170,4 @@ class MainActivity : AppCompatActivity() {
         super.onRestoreInstanceState(savedInstanceState)
         simpleStorage.onRestoreInstanceState(savedInstanceState)
     }
-
-    /**
-     * Old code for requesting directory permission
-     */
-    /*
-    private fun openFolderPicker() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-        folderPickerIntentLauncher.launch(intent)
-    }
-
-    private fun handleDirectoryUri(intent: Intent) {
-        directoryUri = intent.data
-        Log.e("RESULT", directoryUri.toString())
-        viewModel.isFolderPicked.value = true
-        viewModel.chosenDirectory
-    }
-    */
-
-    private inline val isAtLeastR
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 }

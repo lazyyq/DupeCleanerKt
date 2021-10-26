@@ -44,14 +44,14 @@ class DupeManager(
     // List of files found under selected directory, ready to be analyzed for duplicates
     // val foundFiles: MutableList<Music> = LinkedList()
 
-    // List of lists containing duplicates
-    private var dupeList: ArrayList<MutableList<Music>> = ArrayList(100)
-
     // Map of specific file and list of its duplicates
     private val hashMap: HashMap<String, MutableList<Music>> = HashMap()
 
-    private var totalScanned = 0 // Number of total analyzed files
-    private var totalDuplicates = 0 // Number of total duplicates
+    // List of lists containing duplicates
+    var dupeList: ArrayList<MutableList<Music>> = ArrayList(100)
+
+    var totalScanned = 0 // Number of total analyzed files
+    var totalDuplicates = 0 // Number of total duplicates
 
     fun scan(runMediaScannerFirst: Boolean = false, callback: ScanCompletedCallback? = null) {
         if (runMediaScannerFirst) {
