@@ -15,15 +15,6 @@ buildscript {
 }
 
 allprojects {
-    // Required for SimpleStorage
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-        kotlinOptions {
-            freeCompilerArgs = ['-Xjvm-default=all', '-Xopt-in=kotlin.RequiresOptIn']
-            jvmTarget = '1.8'
-            includeRuntime = true
-        }
-    }
-
     repositories {
         google()
         mavenCentral()
