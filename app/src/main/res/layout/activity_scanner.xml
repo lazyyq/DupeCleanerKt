@@ -71,21 +71,23 @@
         </com.google.android.material.appbar.MaterialToolbar>
 
         <com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller
+            android:id="@+id/rvFastScroller"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:id="@+id/rvFastScroller"
-            app:layout_constraintBottom_toTopOf="@id/buttonsContainer"
+            app:handleDrawable="@drawable/recyclerview_fastscroller_bg"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:handleDrawable="@drawable/recyclerview_fastscroller_bg"
-            app:popupDrawable="@drawable/recyclerview_fastscroller_bg"
-            app:layout_constraintTop_toBottomOf="@id/toolbar">
+            app:layout_constraintTop_toBottomOf="@id/toolbar"
+            app:popupDrawable="@drawable/recyclerview_fastscroller_bg">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:listitem="@layout/music_section_item"/>
+                android:clipToPadding="false"
+                android:paddingBottom="96dp"
+                tools:listitem="@layout/music_section_item" />
             <!--app:fastScrollThumbColor="?colorPrimary"
             app:fastScrollThumbInactiveColor="?colorPrimary"-->
 
@@ -114,36 +116,25 @@
             app:minHideDelay="500"
             bind:linearProgressIndicatorVisibility="@{!viewModel.isScanDone()}" />
 
-        <LinearLayout
-            android:id="@+id/buttonsContainer"
+        <com.leinardi.android.speeddial.SpeedDialOverlayLayout
+            android:id="@+id/fabBlockLayout"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingHorizontal="8dp"
+            android:layout_height="0dp"
+            android:background="@color/speed_dial_overlay_layout_background"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnMove"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:enabled="@{viewModel.isScanDone() &amp;&amp; viewModel.totalDupes != 0}"
-                android:text="Move checked" />
-
-            <View
-                android:layout_width="8dp"
-                android:layout_height="match_parent" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDelete"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:enabled="@{viewModel.isScanDone() &amp;&amp; viewModel.totalDupes != 0}"
-                android:text="Delete checked" />
-        </LinearLayout>
+        <com.leinardi.android.speeddial.SpeedDialView
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            app:sdMainFabAnimationRotateAngle="0"
+            android:layout_height="wrap_content"
+            app:sdMainFabClosedSrc="@drawable/ic_delete_outlined"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:sdOverlayLayout="@id/fabBlockLayout" />
 
         <TextView
             android:layout_width="wrap_content"

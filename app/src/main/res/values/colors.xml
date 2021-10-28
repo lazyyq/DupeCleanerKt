@@ -14,4 +14,7 @@
     <color name="color_secondary_variant">#FFA87363</color>
 
     <color name="toolbar_text_color">@color/white</color>
+
+    <!-- 20% alpha -->
+    <color name="speed_dial_overlay_layout_background">#33000000</color>
 </resources>

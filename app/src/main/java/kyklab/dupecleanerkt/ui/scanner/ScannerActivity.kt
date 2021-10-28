@@ -16,6 +16,7 @@ import com.anggrayudi.storage.callback.FileCallback
 import com.anggrayudi.storage.file.DocumentFileCompat
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.anggrayudi.storage.file.moveFileTo
+import com.leinardi.android.speeddial.SpeedDialActionItem
 import io.github.luizgrp.sectionedrecyclerviewadapter.Section
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter
 import kotlinx.coroutines.Dispatchers
@@ -89,9 +90,7 @@ class ScannerActivity : AppCompatActivity() {
         runMediaScannerFirst = intent.getBooleanExtra(INTENT_EXTRA_RUN_MEDIA_SCANNER, false)
 
         setupListView()
-
-        binding.btnMove.setOnClickListener { moveChecked() }
-        binding.btnDelete.setOnClickListener { deleteChecked() }
+        setupFab()
     }
 
     private fun setupToolbar() {
@@ -168,6 +167,30 @@ class ScannerActivity : AppCompatActivity() {
                 }
                 Log.e("SCAN", "total sections ${adapter.sectionCount}")
             }
+        }
+    }
+
+    private fun setupFab() {
+        binding.fab.addActionItem(
+            SpeedDialActionItem.Builder(R.id.fab_delete, R.drawable.ic_delete_forever_outlined)
+                .setLabel("Delete selected")
+                .create()
+        )
+        binding.fab.addActionItem(
+            SpeedDialActionItem.Builder(R.id.fab_move, R.drawable.ic_drive_file_move_outlined)
+                .setLabel("Move selected")
+                .create()
+        )
+        binding.fab.setOnActionSelectedListener { actionItem: SpeedDialActionItem? ->
+            when (actionItem?.id) {
+                R.id.fab_delete -> {
+                    deleteChecked()
+                }
+                R.id.fab_move -> {
+                    moveChecked()
+                }
+            }
+            false
         }
     }
 
