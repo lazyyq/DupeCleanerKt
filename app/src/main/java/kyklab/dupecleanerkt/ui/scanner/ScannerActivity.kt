@@ -7,15 +7,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.anggrayudi.storage.callback.FileCallback
 import com.anggrayudi.storage.file.DocumentFileCompat
 import com.anggrayudi.storage.file.getAbsolutePath
-import com.anggrayudi.storage.file.moveFileTo
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import io.github.luizgrp.sectionedrecyclerviewadapter.Section
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter
@@ -24,13 +21,15 @@ import kotlinx.coroutines.launch
 import kyklab.dupecleanerkt.R
 import kyklab.dupecleanerkt.databinding.ActivityScannerBinding
 import kyklab.dupecleanerkt.dupemanager.DupeManager
+import kyklab.dupecleanerkt.fileoprations.FileOperations
 import kyklab.dupecleanerkt.utils.FastScrollableSectionedRecyclerViewAdapter
 import kyklab.dupecleanerkt.utils.scanMediaFiles
-import java.nio.file.Files
-import java.nio.file.Paths
+import java.util.*
 
 class ScannerActivity : AppCompatActivity() {
     companion object {
+        private const val TAG = "ScannerActivity"
+
         const val INTENT_EXTRA_SCAN_PATH = "intent_extra_scan_path"
         const val INTENT_EXTRA_MATCH_MODE_INDEX = "intent_extra_match_mode_index"
         const val INTENT_EXTRA_RUN_MEDIA_SCANNER = "intent_extra_run_media_scanner"
@@ -67,8 +66,12 @@ class ScannerActivity : AppCompatActivity() {
     private lateinit var adapter: FastScrollableSectionedRecyclerViewAdapter
 
     private lateinit var scanDirPath: String
+    private lateinit var targetDirPath: String
     private lateinit var matchMode: DupeManager.MatchMode
     private var runMediaScannerFirst = false
+
+    // Whether to override if a file with the same name exists when moving duplicates
+    private var overrideOnMove = false
 
     private lateinit var sortOptionsDialogListener: SortOptionsDialogFragment.SortOptionsDialogListener
 
@@ -150,10 +153,9 @@ class ScannerActivity : AppCompatActivity() {
         binding.rv.adapter = adapter
 
         // Add sections
-        Log.e("SCAN", "launching scanner with $scanDirPath")
         dm = DupeManager(this, lifecycleScope, scanDirPath, matchMode)
         dm.scan(runMediaScannerFirst) { duplicates, totalScanned, totalDuplicates ->
-            Log.e("SCAN", "scanned $totalScanned, found $totalDuplicates")
+            Log.e(TAG, "scanned $totalScanned, found $totalDuplicates")
 
             addSections()
 
@@ -165,7 +167,6 @@ class ScannerActivity : AppCompatActivity() {
                     totalChecked.value = getCheckedItemsCount()
                     isScanDone.value = true
                 }
-                Log.e("SCAN", "total sections ${adapter.sectionCount}")
             }
         }
     }
@@ -174,11 +175,13 @@ class ScannerActivity : AppCompatActivity() {
         binding.fab.addActionItem(
             SpeedDialActionItem.Builder(R.id.fab_delete, R.drawable.ic_delete_forever_outlined)
                 .setLabel("Delete selected")
+                .setFabBackgroundColor(resources.getColor(R.color.white, theme))
                 .create()
         )
         binding.fab.addActionItem(
             SpeedDialActionItem.Builder(R.id.fab_move, R.drawable.ic_drive_file_move_outlined)
                 .setLabel("Move selected")
+                .setFabBackgroundColor(resources.getColor(R.color.white, theme))
                 .create()
         )
         binding.fab.setOnActionSelectedListener { actionItem: SpeedDialActionItem? ->
@@ -245,218 +248,154 @@ class ScannerActivity : AppCompatActivity() {
 
     private fun moveChecked() {
         AlertDialog.Builder(this)
-            .setMessage("Move the files?")
-            .setPositiveButton("YES") { dialog, which -> folderPickerLauncher.launch(null) }
+            .setTitle("Move the files? Directory structure will be kept.")
+            .setMultiChoiceItems(
+                arrayOf("Override if a file with the same name exists"),
+                booleanArrayOf(false)
+            ) { dialog, which, isChecked -> overrideOnMove = isChecked }
+            .setPositiveButton("YES") { dialog, which ->
+                moveFolderPickerLauncher.launch(null)
+            }
             .setNegativeButton("NO", null)
             .setCancelable(false)
             .show()
     }
 
-    private val folderPickerLauncher =
+    private val moveFolderPickerLauncher =
         registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
             uri ?: return@registerForActivityResult
 
             val targetDir =
                 DocumentFileCompat.fromUri(this, uri) ?: run {
-                    Log.e("Launcher callback", "uri is null")
                     return@registerForActivityResult
                 }
-            val targetDirPath = targetDir.getAbsolutePath(this)
-            moveCheckedInternal(targetDirPath)
+            targetDirPath = targetDir.getAbsolutePath(this)
+            moveCheckedContd()
         }
 
-    private fun moveCheckedInternal(targetDirPath: String) {
+    private fun moveCheckedContd() {
         // Show progress dialog while moving files
         val moveProgressDialog = ProgressDialog(this).apply {
             setTitle("Moving files")
-            setMessage("Please keep the app open while during operation")
+            setMessage("Please keep the app open during the operation.")
             setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
             setCancelable(false)
             max = viewModel.totalChecked.value!!
             show()
         }
 
-        var success = 0
-        var failure = 0
-        var skipped = 0
-
-        val fileCallback = object : FileCallback() {
-            override fun onFailed(errorCode: ErrorCode) {
-                ++failure
-                Log.e("fileCallback", "Failed")
-                ++moveProgressDialog.progress
-            }
-
-            override fun onCompleted(result: Any) {
-                ++success
-                ++moveProgressDialog.progress
-            }
-
-            override fun onConflict(destinationFile: DocumentFile, action: FileConflictAction) {
-                action.confirmResolution(ConflictResolution.SKIP)
-                Log.e("fileCallback", "Skipped")
-                ++skipped
-                ++moveProgressDialog.progress
-            }
-        }
-        lifecycleScope.launch(Dispatchers.IO) {
-            val context = this@ScannerActivity
-            adapter.forEachSection { section ->
-                if (section is MusicSection) {
-                    section.list.asSequence().withIndex()
-                        .filter { section.checkedIndexes[it.index] }
-                        .forEach {
-                            try {
-                                val file = DocumentFileCompat.fromFullPath(
-                                    context,
-                                    it.value.path
-                                )
-                                val filename = file!!.name!!
-//                                    val parentDir = file!!.parentFile!!.getAbsolutePath(context)
-                                val parentDir =
-                                    with(it.value.path) { substring(0 until length - filename.length - 1) }
-                                val subDir =
-                                    parentDir.substring(startIndex = scanDirPath.length /*+ 1*/)
-
-//                                    val appendix1 = targetDir.getAbsolutePath(context)
-//                                    val appendix2 = subDir!!.getAbsolutePath(context)
-//                                    Log.e("APPENDIX", "1:$appendix1, 2:$appendix2")
-                                val moveDirPath = "$targetDirPath/$subDir"
-                                if (!DocumentFileCompat.doesExist(
-                                        context,
-                                        moveDirPath
-                                    )
-                                ) DocumentFileCompat.mkdirs(context, moveDirPath)
-
-                                val moveDir = DocumentFileCompat.fromFullPath(
-                                    context,
-                                    moveDirPath
-                                )!!
-                                /*if (!moveDir.exists()) {
-                                val subDirs = subDir.split("/")
-                                var documentFile = targetDir
-                                subDirs.forEach { dirname ->
-                                    documentFile = documentFile.createDirectory(dirname)!!
-                                }
-                            }*/
-
-                                file.moveFileTo(
-                                    context = context,
-                                    targetFolder = moveDir,
-                                    callback = fileCallback
-                                )
-                            } catch (e: NullPointerException) {
-                                Log.e("Mover", "NPE")
-                                e.printStackTrace()
-                                ++failure
-                            }
-                        }
+        lifecycleScope.launch(Dispatchers.Default) {
+            val list = getCheckedMusicFilePaths()
+            val callback = object : FileOperations.FileCopyCallback {
+                override fun onProgressUpdate(
+                    total: Int, success: Int, failure: Int, skipped: Int
+                ) {
+                    moveProgressDialog.progress = total
                 }
-            } // forEachSection done
 
-            launch(Dispatchers.Main) {
-                moveProgressDialog.dismiss()
-            }
-
-            // Run media scanner to update info for moved files
-            lateinit var scanProgressDialog: ProgressDialog
-            launch(Dispatchers.Main) {
-                scanProgressDialog = ProgressDialog(this@ScannerActivity).apply {
-                    setTitle("Updating database")
-                    setMessage("Please keep the app open while during operation")
-                    setProgressStyle(ProgressDialog.STYLE_SPINNER)
-                    setCancelable(false)
-                    show()
+                override fun onOperationDone(
+                    total: Int, success: Int, failure: Int, skipped: Int
+                ) {
+                    moveProgressDialog.dismiss()
+                    finishMove(success, failure, skipped)
                 }
             }
-
-            scanMediaFiles(arrayOf(scanDirPath, targetDirPath)) { path, uri ->
-                // launch(Dispatchers.Main) { // This causes callback to hang
-                scanProgressDialog.dismiss()
-
-                AlertDialog.Builder(context)
-                    .setTitle("Move complete!")
-                    .setMessage(
-                        "Success: $success\nFailure: $failure\nSkipped: $skipped"
-                    )
-                    .setPositiveButton("OK") { dialog, which ->
-                        this@ScannerActivity.finish()
-                    }
-                    .setCancelable(false)
-                    .show()
-                // } // launch(Dispatchers.Main)
-            }
+            FileOperations.copy(
+                this@ScannerActivity, list, targetDirPath,
+                scanDirPath, move = true, override = overrideOnMove, callback
+            )
         }
+    }
+
+    private fun finishMove(success: Int, failure: Int, skipped: Int) {
+        // Run media scanner to update info for moved files
+        // launch(Dispatchers.Main) {
+        val scanProgressDialog: ProgressDialog = ProgressDialog(this@ScannerActivity).apply {
+            setTitle("Updating database")
+            setMessage("Please keep the app open during the operation")
+            setProgressStyle(ProgressDialog.STYLE_SPINNER)
+            setCancelable(false)
+            show()
+        }
+        // }
+        scanMediaFiles(arrayOf(scanDirPath, targetDirPath)) { path, uri ->
+            // launch(Dispatchers.Main) { // This causes callback to hang
+            scanProgressDialog.dismiss()
+
+            AlertDialog.Builder(this@ScannerActivity)
+                .setTitle("Move complete!")
+                .setMessage(
+                    "Success: $success\nFailure: $failure\nSkipped: $skipped"
+                )
+                .setPositiveButton("OK") { dialog, which ->
+                    this@ScannerActivity.finish()
+                }
+                .setCancelable(false)
+                .show()
+            // } // launch(Dispatchers.Main)
+        }
+
     }
 
     private fun deleteChecked() {
         AlertDialog.Builder(this)
-            .setTitle("Are you sure?")
-            .setPositiveButton("YES") { dialog, which -> deleteCheckedInternal() }
+            .setTitle("Are you sure you want to delete?")
+            .setMessage("Warning: This task cannot be cancelled or be reverted")
+            .setPositiveButton("YES") { dialog, which -> deleteCheckedContd() }
             .setNegativeButton("NO", null)
             .setCancelable(false)
             .show()
     }
 
-    private fun deleteCheckedInternal() {
+    private fun deleteCheckedContd() {
         val deleteProgressDialog = ProgressDialog(this).apply {
-            setTitle("Deleting duplicates")
-            setMessage("Please keep the app open while during operation")
-            setCancelable(false)
+            setTitle("Deleting files")
+            setMessage("Please keep the app open during the operation.")
             setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
+            setCancelable(false)
             max = viewModel.totalChecked.value!!
             show()
         }
 
-        lifecycleScope.launch(Dispatchers.IO) {
-            var success = 0
-            var failure = 0
-            adapter.forEachSection { section ->
-                if (section is MusicSection) {
-                    section.list.asSequence().withIndex()
-                        .filter { section.checkedIndexes[it.index] }
-                        .forEach {
-                            try {
-                                if (Files.deleteIfExists(Paths.get(it.value.path))) {
-                                    ++success
-                                } else {
-                                    ++failure
-                                }
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                ++failure
-                            } finally {
-                                ++deleteProgressDialog.progress
-                            }
-                        } // for each items in section
+        lifecycleScope.launch(Dispatchers.Default) {
+            val list = getCheckedMusicFilePaths()
+            val callback = object : FileOperations.FileDeleteCallback {
+                override fun onProgressUpdate(total: Int, success: Int, failure: Int) {
+                    deleteProgressDialog.progress = total
                 }
-            } // forEachSection
 
-            lateinit var scanProgressDialog: ProgressDialog
-
-            launch(Dispatchers.Main) {
-                deleteProgressDialog.dismiss()
-
-                scanProgressDialog = ProgressDialog(this@ScannerActivity).apply {
-                    setTitle("Updating database")
-                    setMessage("Please keep the app open while during operation")
-                    setProgressStyle(ProgressDialog.STYLE_SPINNER)
-                    setCancelable(false)
-                    show()
+                override fun onOperationDone(total: Int, success: Int, failure: Int) {
+                    deleteProgressDialog.dismiss()
+                    finishDelete(success, failure)
                 }
             }
+            FileOperations.delete(this@ScannerActivity, list, callback)
+        }
+    }
 
-            scanMediaFiles(scanDirPath) { path, uri ->
-                scanProgressDialog.dismiss()
+    private fun finishDelete(success: Int, failure: Int) {
+        // Run media scanner to update info for moved files
+        val scanProgressDialog: ProgressDialog = ProgressDialog(this@ScannerActivity).apply {
+            setTitle("Updating database")
+            setMessage("Please keep the app open during the operation")
+            setProgressStyle(ProgressDialog.STYLE_SPINNER)
+            setCancelable(false)
+            show()
+        }
+        scanMediaFiles(arrayOf(scanDirPath)) { path, uri ->
+            scanProgressDialog.dismiss()
 
-                AlertDialog.Builder(this@ScannerActivity)
-                    .setTitle("Delete complete!")
-                    .setMessage("Success: $success\nFailure: $failure")
-                    .setPositiveButton("OK") { dialog, which -> this@ScannerActivity.finish() }
-                    .setCancelable(false)
-                    .show()
-            }
-        } // Dispatchers.IO
+            AlertDialog.Builder(this@ScannerActivity)
+                .setTitle("Delete complete!")
+                .setMessage(
+                    "Success: $success\nFailure: $failure"
+                )
+                .setPositiveButton("OK") { dialog, which ->
+                    this@ScannerActivity.finish()
+                }
+                .setCancelable(false)
+                .show()
+        }
     }
 
     private fun getCheckedItemsCount(): Int {
@@ -467,6 +406,17 @@ class ScannerActivity : AppCompatActivity() {
             }
         }
         return result
+    }
+
+    private fun getCheckedMusicFilePaths(): ArrayList<String> {
+        val list = ArrayList<String>(viewModel.totalChecked.value ?: 10)
+        adapter.forEachSection { section ->
+            (section as MusicSection).list.asSequence().withIndex()
+                .filter { section.checkedIndexes[it.index] }.map { it.value.path }.let {
+                    list.addAll(it)
+                }
+        }
+        return list
     }
 
     private fun check(mode: CheckMode) {

@@ -1,8 +1,11 @@
 package kyklab.dupecleanerkt.utils
 
 import android.content.ContentUris
+import android.content.Context
 import android.database.Cursor
 import android.net.Uri
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import java.util.*
 
 inline fun <T : Cursor> T.untilLast(block: (T) -> Unit): T {
     this.use {
@@ -21,3 +24,8 @@ fun getAlbumArtUri(albumId: Long): Uri {
     val albumArtUri = ContentUris.withAppendedId(artworkUri, albumId)
     return albumArtUri
 }
+
+val Context.lbm: LocalBroadcastManager
+    get() = LocalBroadcastManager.getInstance(this)
+
+fun <E> Collection<E>.toArrayList() = (this as? ArrayList<E>) ?: ArrayList<E>(this)
