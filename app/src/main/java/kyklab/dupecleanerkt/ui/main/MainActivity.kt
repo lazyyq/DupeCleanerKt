@@ -1,17 +1,19 @@
 package kyklab.dupecleanerkt.ui.main
 
 import android.Manifest
+import android.animation.ObjectAnimator
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.databinding.DataBindingUtil
@@ -62,7 +64,15 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        installSplashScreen()
+        installSplashScreen().setOnExitAnimationListener { splashScreenViewProvider ->
+            ObjectAnimator.ofFloat(
+                splashScreenViewProvider.view, View.ALPHA, 1f, 0f
+            ).apply {
+                duration = 500L
+                doOnEnd { splashScreenViewProvider.remove() }
+                start()
+            }
+        }
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
@@ -82,8 +92,6 @@ class MainActivity : AppCompatActivity() {
 //        binding.btnRemove.setOnClickListener { remove() }
         binding.btnGo.setOnClickListener { go() }
 //        binding.btnRunMediaScanner.setOnClickListener { runMediaScanner() }
-
-        setupSpinner()
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -205,12 +213,6 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread {
                 viewModel.isMediaScannerRunning.value = false
             }
-        }
-    }
-
-    private fun setupSpinner() {
-        viewModel.spinnerSelectedItem.observe(this) {
-            Log.e("Observer", "Spinner value updated: $it")
         }
     }
 

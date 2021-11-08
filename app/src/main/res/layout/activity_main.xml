@@ -25,7 +25,7 @@
             android:orientation="vertical"
             tools:context=".ui.main.MainActivity">
 
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 style="@style/MainCardViewStyle"
                 android:layout_height="wrap_content">
 
@@ -46,9 +46,9 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 style="@style/MainCardViewStyle"
                 bind:visibility="@{!viewModel.isPermissionGranted()}">
 
@@ -79,9 +79,9 @@
                         android:layout_height="wrap_content"
                         android:text="Grant permissions" />
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
-            <androidx.cardview.widget.CardView style="@style/MainCardViewStyle">
+            <com.google.android.material.card.MaterialCardView style="@style/MainCardViewStyle">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -123,9 +123,9 @@
 
                 </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
-            <androidx.cardview.widget.CardView style="@style/MainCardViewStyle">
+            <com.google.android.material.card.MaterialCardView style="@style/MainCardViewStyle">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -166,7 +166,7 @@
 
                 </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
             <Space
                 android:layout_width="match_parent"
