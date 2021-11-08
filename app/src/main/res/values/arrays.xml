@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="match_modes">
-        <item>Match title only</item>
-        <item>Match title, artist</item>
-        <item>Match title, artist, album</item>
+        <item>Same title</item>
+        <item>Same title, artist</item>
+        <item>Same title, artist, album</item>
     </string-array>
 </resources>

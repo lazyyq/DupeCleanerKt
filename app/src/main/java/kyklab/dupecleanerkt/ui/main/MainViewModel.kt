@@ -14,7 +14,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val isFolderPicked: MutableLiveData<Boolean> =
         MutableLiveData(chosenDirectory.value?.isNotEmpty() ?: false)
     val isDebug: MutableLiveData<Boolean> = MutableLiveData(false)
-    val spinnerSelectedItem: MutableLiveData<Int> = MutableLiveData(1)
+
+    val selectedMatchMode: MutableLiveData<Int> = MutableLiveData(1)
+    fun updateSelectedMatchMode(i: Int) {
+        selectedMatchMode.value = i
+    }
+
     val isMediaScannerRunning: MutableLiveData<Boolean> = MutableLiveData(false)
     val runMediaScannerFirst: MutableLiveData<Boolean> = MutableLiveData(false)
     val isScanReady: MediatorLiveData<Boolean> = MediatorLiveData()

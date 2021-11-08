@@ -93,7 +93,7 @@
                         style="@style/MainCardTitleTextStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Step 1. Choose directory" />
+                        android:text="Step 1. Choose a directory to scan" />
 
                     <Space style="@style/MainCardTitleSpace" />
 
@@ -116,7 +116,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:enabled="@{viewModel.isPermissionGranted()}"
-                        android:text="Choose Directory"
+                        android:text="Choose a directory"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent" />
@@ -141,21 +141,27 @@
 
                     <Space style="@style/MainCardTitleSpace" />
 
-                    <androidx.appcompat.widget.AppCompatSpinner
-                        android:id="@+id/spinner"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:enabled="@{viewModel.isPermissionGranted() &amp;&amp; viewModel.isFolderPicked()}"
-                        android:entries="@array/match_modes"
-                        android:selectedItemPosition="@={viewModel.spinnerSelectedItem}" />
-
-                    <androidx.appcompat.widget.AppCompatCheckBox
-                        android:id="@+id/cbRunMediaScannerFirst"
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="@={viewModel.runMediaScannerFirst}"
-                        android:enabled="@{viewModel.isPermissionGranted() &amp;&amp; viewModel.isFolderPicked()}"
-                        android:text="Run media scanner first" />
+                        android:layout_margin="8dp"
+                        android:text="Choose how to determine if a file is a duplicate." />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/tvMatchModes"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            bind:defaultEntry="@{1}"
+                            bind:entries="@{@stringArray/match_modes}"
+                            bind:layout="@{@layout/dropdown_menu_list_item}"
+                            bind:onItemSelected="@{viewModel::updateSelectedMatchMode}" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
                     <Button
                         android:id="@+id/btnGo"

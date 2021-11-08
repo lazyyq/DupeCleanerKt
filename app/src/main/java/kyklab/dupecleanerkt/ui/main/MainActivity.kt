@@ -82,11 +82,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnGrantPermissions.setOnClickListener { requestPermissions() }
         binding.btnChooseDirectory.setOnClickListener { openFolderPicker() }
-//        binding.btnTest.setOnClickListener { test() }
-//        binding.btnCreate.setOnClickListener { create() }
-//        binding.btnRemove.setOnClickListener { remove() }
         binding.btnGo.setOnClickListener { go() }
-//        binding.btnRunMediaScanner.setOnClickListener { runMediaScanner() }
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -140,44 +136,8 @@ class MainActivity : AppCompatActivity() {
         }
 
     private fun openFolderPicker() {
-//        simpleStorage.storageAccessCallback = storageAccessCallback
-//        simpleStorage.requestStorageAccess()
-
-//        simpleStorage.folderPickerCallback = folderPickerCallback
-//        simpleStorage.openFolderPicker()
-
-//        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-//        startActivityForResult(intent, 1)
-
         folderPickerLauncher.launch(null)
     }
-
-    /*
-    private fun test() {
-        val path = "/storage/emulated/0/Android/data/.nomedia"
-        val file = DocumentFileCompat.fromFullPath(this, path)
-        file?.name?.let { Log.e("TEST", it) }
-    }
-
-    private fun create() {
-        val path = "/storage/emulated/0/test"
-        val file = DocumentFileCompat.fromFullPath(this, path)
-        if (file == null) {
-            Log.e("create()", "file is null")
-        }
-        if (file == null || !file.exists()) {
-            val result = File(path).createNewFile()
-            Log.e("Create new file", "result: $result")
-        }
-    }
-
-    private fun remove() {
-        val path = "/storage/emulated/0/test"
-        val file = DocumentFileCompat.fromFullPath(this, path)
-        val result = file?.delete()
-        Log.e("remove", "result: $result")
-    }
-    */
 
     private fun go() {
         if (path == null) {
@@ -187,7 +147,7 @@ class MainActivity : AppCompatActivity() {
                 putExtra(ScannerActivity.INTENT_EXTRA_SCAN_PATH, path)
                 putExtra(
                     ScannerActivity.INTENT_EXTRA_MATCH_MODE_INDEX,
-                    viewModel.spinnerSelectedItem.value
+                    viewModel.selectedMatchMode.value
                 )
                 putExtra(
                     ScannerActivity.INTENT_EXTRA_RUN_MEDIA_SCANNER,
@@ -200,8 +160,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        // Mandatory for Activity, but not for Fragment
-//        Log.e("RESULT", "$requestCode, $resultCode, $data")
         simpleStorage.onActivityResult(requestCode, resultCode, data)
     }
 
@@ -214,23 +172,6 @@ class MainActivity : AppCompatActivity() {
         super.onRestoreInstanceState(savedInstanceState)
         simpleStorage.onRestoreInstanceState(savedInstanceState)
     }
-
-    /**
-     * Old code for requesting directory permission
-     */
-    /*
-    private fun openFolderPicker() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-        folderPickerIntentLauncher.launch(intent)
-    }
-
-    private fun handleDirectoryUri(intent: Intent) {
-        directoryUri = intent.data
-        Log.e("RESULT", directoryUri.toString())
-        viewModel.isFolderPicked.value = true
-        viewModel.chosenDirectory
-    }
-    */
 
     private inline val isAtLeastR
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
