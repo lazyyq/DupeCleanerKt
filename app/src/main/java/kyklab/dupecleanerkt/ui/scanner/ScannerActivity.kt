@@ -23,6 +23,7 @@ import kyklab.dupecleanerkt.databinding.ActivityScannerBinding
 import kyklab.dupecleanerkt.dupemanager.DupeManager
 import kyklab.dupecleanerkt.fileoprations.FileOperations
 import kyklab.dupecleanerkt.utils.FastScrollableSectionedRecyclerViewAdapter
+import kyklab.dupecleanerkt.utils.postToUiThread
 import kyklab.dupecleanerkt.utils.scanMediaFiles
 import java.util.*
 
@@ -153,13 +154,16 @@ class ScannerActivity : AppCompatActivity() {
         binding.rv.adapter = adapter
 
         // Add sections
-        dm = DupeManager(this, lifecycleScope, scanDirPath, matchMode)
-        dm.scan(runMediaScannerFirst) { duplicates, totalScanned, totalDuplicates ->
-            Log.e(TAG, "scanned $totalScanned, found $totalDuplicates")
+        dm = DupeManager(this, scanDirPath, matchMode)
+        lifecycleScope.launch(Dispatchers.IO) {
+            dm.scan(
+                runMediaScannerFirst,
+                lifecycleScope
+            ) { duplicates, totalScanned, totalDuplicates ->
+                Log.e(TAG, "scanned $totalScanned, found $totalDuplicates")
 
-            addSections()
+                addSections()
 
-            runOnUiThread {
                 adapter.notifyDataSetChanged()
                 viewModel.apply {
                     this.totalScanned.value = totalScanned
@@ -235,13 +239,12 @@ class ScannerActivity : AppCompatActivity() {
             addSections()
 
             // Update UI
-            runOnUiThread {
+            postToUiThread {
                 adapter.notifyDataSetChanged()
                 viewModel.isScanDone.value = true
                 // Reset checked states
                 binding.checkBox.setChecked(true, true)
                 check(CheckMode.ONLY_DUPLICATES)
-                val dd = dm.dupeList
             }
         }
     }

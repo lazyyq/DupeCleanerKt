@@ -5,6 +5,9 @@ import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 
 inline fun <T : Cursor> T.untilLast(block: (T) -> Unit): T {
@@ -28,3 +31,7 @@ val Context.lbm: LocalBroadcastManager
     get() = LocalBroadcastManager.getInstance(this)
 
 fun <E> Collection<E>.toArrayList() = (this as? ArrayList<E>) ?: ArrayList(this)
+
+inline fun CoroutineScope.postToUiThread(crossinline block: () -> Unit) {
+    launch(Dispatchers.Main) { block() }
+}

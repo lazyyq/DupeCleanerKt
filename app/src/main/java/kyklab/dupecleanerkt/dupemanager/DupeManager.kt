@@ -2,10 +2,12 @@ package kyklab.dupecleanerkt.dupemanager
 
 import android.content.Context
 import android.provider.MediaStore
+import androidx.annotation.WorkerThread
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kyklab.dupecleanerkt.data.Music
+import kyklab.dupecleanerkt.utils.postToUiThread
 import kyklab.dupecleanerkt.utils.scanMediaFiles
 import kyklab.dupecleanerkt.utils.untilLast
 import java.io.File
@@ -14,7 +16,6 @@ import java.util.*
 
 class DupeManager(
     private val context: Context,
-    private val scope: CoroutineScope,
     var path: String,
     var matchMode: MatchMode
 ) {
@@ -40,94 +41,100 @@ class DupeManager(
     var totalScanned = 0 // Number of total analyzed files
     var totalDuplicates = 0 // Number of total duplicates
 
-    fun scan(runMediaScannerFirst: Boolean = false, callback: ScanCompletedCallback? = null) {
+    @DelicateCoroutinesApi
+    @WorkerThread
+    fun scan(
+        runMediaScannerFirst: Boolean = false,
+        scope: CoroutineScope = GlobalScope,
+        callback: ScanCompletedCallback? = null
+    ) {
         if (runMediaScannerFirst) {
             context.scanMediaFiles(path) { path, uri ->
-                scanInternal(callback)
+                scanContd(scope, callback)
             }
         } else {
-            scanInternal(callback)
+            scanContd(scope, callback)
         }
     }
 
-    private fun scanInternal(callback: ScanCompletedCallback? = null) {
-        scope.launch(Dispatchers.IO) {
-            /* Query mediastore db for music files and add to found music list */
+    private fun scanContd(scope: CoroutineScope, callback: ScanCompletedCallback?) {
+        /* Query mediastore db for music files and add to found music list */
 
-            dupeList.clear()
-            hashMap.clear()
-            totalScanned = 0
-            totalDuplicates = 0
+        dupeList.clear()
+        hashMap.clear()
+        totalScanned = 0
+        totalDuplicates = 0
 
-            context.contentResolver.query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                arrayOf(
-                    MediaStore.Audio.Media.DATA,
-                    MediaStore.Audio.Media.TITLE,
-                    MediaStore.Audio.AlbumColumns.ARTIST,
-                    MediaStore.Audio.AlbumColumns.ALBUM,
-                    MediaStore.Audio.AlbumColumns.ALBUM_ID,
-                    MediaStore.Audio.AudioColumns.DURATION,
-                    MediaStore.Audio.Media.DATE_MODIFIED
-                ),
-                "${MediaStore.Audio.Media.DATA} LIKE '$path/%.mp3'",
-                null,
-                "${MediaStore.Audio.Media.DATA} ASC"
-            )?.use { cursor ->
-                val dataColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-                val titleColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-                val artistColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Audio.AlbumColumns.ARTIST)
-                val albumColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Audio.AlbumColumns.ALBUM)
-                val albumIdColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Audio.AlbumColumns.ALBUM_ID)
-                val durationColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.DURATION)
-                val dateModifiedColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
+        context.contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(
+                MediaStore.Audio.Media.DATA,
+                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.AlbumColumns.ARTIST,
+                MediaStore.Audio.AlbumColumns.ALBUM,
+                MediaStore.Audio.AlbumColumns.ALBUM_ID,
+                MediaStore.Audio.AudioColumns.DURATION,
+                MediaStore.Audio.Media.DATE_MODIFIED
+            ),
+            "${MediaStore.Audio.Media.DATA} LIKE '$path/%.mp3'",
+            null,
+            "${MediaStore.Audio.Media.DATA} ASC"
+        )?.use { cursor ->
+            val dataColumn =
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+            val titleColumn =
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
+            val artistColumn =
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.AlbumColumns.ARTIST)
+            val albumColumn =
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.AlbumColumns.ALBUM)
+            val albumIdColumn =
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.AlbumColumns.ALBUM_ID)
+            val durationColumn =
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.DURATION)
+            val dateModifiedColumn =
+                cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
 
-                dupeList.ensureCapacity(cursor.count)
+            dupeList.ensureCapacity(cursor.count)
 
-                cursor.untilLast {
-                    val musicPath = it.getString(dataColumn)
-                    if (File(musicPath).exists()) {
-                        val music = Music(
-                            path = musicPath,
-                            title = it.getString(titleColumn),
-                            artist = it.getString(artistColumn),
-                            album = it.getString(albumColumn),
-                            albumId = it.getLong(albumIdColumn),
-                            duration = it.getLong(durationColumn),
-                            dateModified = it.getLong(dateModifiedColumn),
-                        )
+            cursor.untilLast {
+                val musicPath = it.getString(dataColumn)
+                if (File(musicPath).exists()) {
+                    val music = Music(
+                        path = musicPath,
+                        title = it.getString(titleColumn),
+                        artist = it.getString(artistColumn),
+                        album = it.getString(albumColumn),
+                        albumId = it.getLong(albumIdColumn),
+                        duration = it.getLong(durationColumn),
+                        dateModified = it.getLong(dateModifiedColumn),
+                    )
 
-                        val key = generateHashKey(music)
-                        if (hashMap.containsKey(key)) {
-                            hashMap[key]?.add(music)
-                        } else {
-                            val list = ArrayList<Music>()
-                            list.add(music)
-                            dupeList.add(list)
-                            hashMap[key] = list
-                        }
-                        // updater.accept(music)
-                        ++totalScanned
-                        // if (updater != null) updater.accept(music)
-                    } // Check file exists
-                } // Cursor
-            } // Mediastore query
+                    val key = generateHashKey(music)
+                    if (hashMap.containsKey(key)) {
+                        hashMap[key]?.add(music)
+                    } else {
+                        val list = ArrayList<Music>()
+                        list.add(music)
+                        dupeList.add(list)
+                        hashMap[key] = list
+                    }
+                    // updater.accept(music)
+                    ++totalScanned
+                    // if (updater != null) updater.accept(music)
+                } // Check file exists
+            } // Cursor
+        } // Mediastore query
 
-            /* Query done */
+        /* Query done */
 
-            dupeList.apply {
-                removeIf { it.size <= 1 }
-                trimToSize()
-                forEach { totalDuplicates += it.size }
-            }
+        dupeList.apply {
+            removeIf { it.size <= 1 }
+            trimToSize()
+            forEach { totalDuplicates += it.size }
+        }
 
+        scope.postToUiThread {
             callback?.onScanDone(dupeList, totalScanned, totalDuplicates)
         }
     }

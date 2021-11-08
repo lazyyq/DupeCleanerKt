@@ -7,12 +7,12 @@ import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
 import com.anggrayudi.storage.callback.FileCallback
-import com.anggrayudi.storage.extension.postToUi
 import com.anggrayudi.storage.file.DocumentFileCompat
 import com.anggrayudi.storage.file.copyFileTo
 import com.anggrayudi.storage.file.moveFileTo
 import kyklab.dupecleanerkt.R
 import kyklab.dupecleanerkt.utils.lbm
+import kyklab.dupecleanerkt.utils.postToUiThread
 
 class FileCopyService/*(
     private val src: List<String>,
@@ -175,7 +175,7 @@ class FileCopyService/*(
 
         // Callbacks are executed on ui thread, while we are currently on a worker thread,
         // causing finishOperation() to sometimes be called earlier than the last callback.
-        simpleStorageCallback.uiScope.postToUi {
+        simpleStorageCallback.uiScope.postToUiThread {
             finishOperation()
             Log.e(TAG, "Broadcast done, total $totalSent broadcasts sent")
         }
