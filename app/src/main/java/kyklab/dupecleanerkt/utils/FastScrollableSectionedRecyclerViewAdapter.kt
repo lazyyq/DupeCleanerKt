@@ -1,7 +1,6 @@
 package kyklab.dupecleanerkt.utils
 
 import com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller
-import io.github.luizgrp.sectionedrecyclerviewadapter.Section
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter
 
 class FastScrollableSectionedRecyclerViewAdapter : SectionedRecyclerViewAdapter(),

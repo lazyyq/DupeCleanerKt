@@ -21,11 +21,10 @@ inline fun <T : Cursor> T.untilLast(block: (T) -> Unit): T {
 fun getAlbumArtUri(albumId: Long): Uri {
     val artworkUri =
         Uri.parse("content://media/external/audio/albumart") // MediaProvider.ALBUMART_URI
-    val albumArtUri = ContentUris.withAppendedId(artworkUri, albumId)
-    return albumArtUri
+    return ContentUris.withAppendedId(artworkUri, albumId)
 }
 
 val Context.lbm: LocalBroadcastManager
     get() = LocalBroadcastManager.getInstance(this)
 
-fun <E> Collection<E>.toArrayList() = (this as? ArrayList<E>) ?: ArrayList<E>(this)
+fun <E> Collection<E>.toArrayList() = (this as? ArrayList<E>) ?: ArrayList(this)

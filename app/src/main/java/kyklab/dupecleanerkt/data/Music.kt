@@ -25,7 +25,7 @@ data class Music(
         "$minutes:${if (seconds < 10) "0$seconds" else seconds}"
     }
 
-    val dateModifiedString = run {
+    val dateModifiedString: String = run {
         calendar.timeInMillis = dateModified * 1000
         format.format(calendar.time)
     }

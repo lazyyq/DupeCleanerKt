@@ -26,14 +26,9 @@ import kyklab.dupecleanerkt.R
 import kyklab.dupecleanerkt.databinding.ActivityMainBinding
 import kyklab.dupecleanerkt.ui.scanner.ScannerActivity
 import kyklab.dupecleanerkt.utils.Prefs
-import kyklab.dupecleanerkt.utils.scanMediaFiles
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
-    companion object {
-        val REQUEST_CODE_STORAGE_ACCESS = 100
-    }
-
     private lateinit var viewModel: MainViewModel
     private lateinit var binding: ActivityMainBinding
 
@@ -200,19 +195,6 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             startActivity(intent)
-        }
-    }
-
-    private fun runMediaScanner() {
-        viewModel.isMediaScannerRunning.value = true
-        val start = System.currentTimeMillis()
-        scanMediaFiles(path!!) { path, uri ->
-            val end = System.currentTimeMillis()
-            Toast.makeText(this, "Finished scanning, took ${end - start}ms", Toast.LENGTH_SHORT)
-                .show()
-            runOnUiThread {
-                viewModel.isMediaScannerRunning.value = false
-            }
         }
     }
 

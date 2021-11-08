@@ -2,7 +2,6 @@ package kyklab.dupecleanerkt.dupemanager
 
 import android.content.Context
 import android.provider.MediaStore
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,8 +20,6 @@ class DupeManager(
 ) {
     companion object {
         private val TAG = DupeManager::class.java.simpleName
-
-        private fun log(msg: String) = Log.e(TAG, msg)
     }
 
     enum class MatchMode {
@@ -141,9 +138,9 @@ class DupeManager(
 
     private fun generateHashKey(music: Music): String {
         return when (matchMode) {
-            DupeManager.MatchMode.TITLE -> music.title
-            DupeManager.MatchMode.TITLE_ARTIST -> "${music.title}\n\n${music.artist}"
-            DupeManager.MatchMode.TITLE_ARTIST_ALBUM -> "${music.title}\n\n${music.artist}\n\n${music.album}"
+            MatchMode.TITLE -> music.title
+            MatchMode.TITLE_ARTIST -> "${music.title}\n\n${music.artist}"
+            MatchMode.TITLE_ARTIST_ALBUM -> "${music.title}\n\n${music.artist}\n\n${music.album}"
         }
     }
 }
